@@ -24,10 +24,12 @@ export class Archiver {
     debug(`Start articleId: ${chalk.yellow(lastArticleId)}`)
 
     for (let i = lastArticleId - 1; i >= 1; i -= 1) {
-      debug(`Archiving ${chalk.yellow(i)}... (${chalk.green(lastArticleId - i - 1)} done.)`)
       
       // 게시글 파싱
       const article = await fetchArticle(board, i)
+
+      debug(`Archiving ${chalk.yellow(i)}... (${chalk.green(lastArticleId - i - 1)} done. ${article == null ? chalk.red("Not Found") : chalk.green("Exist")})`)
+
       if (article == null) {
         continue
       }
@@ -40,7 +42,7 @@ export class Archiver {
         const imagePath = images[k]
         if (imagePath == null) {
           article.content = article.content.replaceAll(article.attachments[k], "")
-          article.attachments[k] = ""
+          article.attachments[k] = "null"
           continue
         }
         article.content = article.content.replaceAll(article.attachments[k], imagePath)

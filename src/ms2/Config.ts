@@ -1,7 +1,7 @@
 /**
  * 요청 최소 주기 (ms)
  */
-export const requestCooltime = 300
+export const requestCooltime = 1000
 
 /**
  * 유저 에이전트

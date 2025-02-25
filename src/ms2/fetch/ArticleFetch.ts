@@ -9,7 +9,6 @@ import { Element } from "domhandler"
 import type { MS2Comment } from "../base/MS2Comment.ts"
 import { replaceStyle } from "./StyleReplacer.ts"
 import Bun from "bun"
-import Path from "node:path"
 
 export type MS2Article = NonNullable<Awaited<ReturnType<typeof fetchArticle>>>
 
@@ -52,7 +51,7 @@ export async function fetchArticle(board: BoardCategory, articleId: number) {
 
   // 작성자 직업
   const job = parseJobFromIcon(
-    $(".board_info1 .writer .job").attr("src")
+    $(".board_info1 .writer .job").attr("src") ?? ""
   )
   // Lv.xx 사람
   const writerPart = $(".board_info1 .writer").text().trim()
@@ -100,7 +99,8 @@ export async function fetchArticle(board: BoardCategory, articleId: number) {
     commentPage = 1
     commentCount = 999
   } else if (commentCount >= 1) {
-    comments.push(...parseComments($).comments)
+    const cmt$ = loadDOM($("#mv_comment").html() ?? "<p></p>")
+    comments.push(...parseComments(cmt$).comments)
   }
 
   // 댓글 더 불러오기
@@ -287,10 +287,21 @@ export async function writeImages(article: MS2Article) {
         writtenPath.push(null)
         continue
       }
+    } else if (url.startsWith("http")) {
+      try {
+        const req = await requestBlob(url)
+        extension = req.extension
+        binary = req.blob as Blob
+      } catch (err) {
+        console.error(err)
+        writtenPath.push(null)
+        continue
+      }
     } else {
-      const req = await requestBlob(url)
-      extension = req.extension
-      binary = req.blob      
+      // blob??
+      console.error(`Unknown URL Schema: ${url}`)
+      writtenPath.push(null)
+      continue
     }
 
 

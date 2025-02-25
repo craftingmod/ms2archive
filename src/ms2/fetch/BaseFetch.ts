@@ -36,8 +36,8 @@ export async function requestMS2Get(postfix: string) {
     // 302 체크 (서버 과부하 or 404)
     if (resp.status === 302) {
       // 1초 대기후 재시도
-      await sleep(1000)
-      continue
+      // await sleep(3000)
+      break
       // return null
     }
     // 404인 경우 null 반환

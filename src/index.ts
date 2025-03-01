@@ -7,4 +7,5 @@ const storage = new ArchiveStorage("ms2archive")
 const archiver = new Archiver(storage)
 
 // await archiver.archiveBoard(BoardCategory.Free)
-await archiver.archiveBoard(BoardCategory.Proposal)
+// await archiver.archiveBoard(BoardCategory.Proposal)
+await archiver.archiveBoard(BoardCategory.Artwork)

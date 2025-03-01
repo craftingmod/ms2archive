@@ -73,6 +73,13 @@ test("가장 마지막 게시글 번호 TEST", async () => {
   expect(lastArticleId).toBeGreaterThan(193610)
 })
 
+test("가장 마지막 게시글 번호 TEST2 (ARTWORK)", async () => {
+  const lastArticleId = await fetchLatestArticleId(
+    BoardCategory.Artwork
+  )
+  expect(lastArticleId).toBeGreaterThan(30000)
+})
+
 /*
 test("없는 게시글 처리", async () => {
   const noArticle = await fetchArticle(

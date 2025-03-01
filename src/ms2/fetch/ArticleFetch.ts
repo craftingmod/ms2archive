@@ -244,7 +244,9 @@ export async function fetchLatestArticleId(board: BoardCategory, plus1 = false) 
     return null
   }
 
-  const hrefs = $("#board_page .title a").map((_:number, el:Element) => {
+  // 타입 오류 있음
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hrefs = $(boardRoute.hrefSelector as any).map((_:number, el:Element) => {
     const postfix = $(el).attr("href")
     if (postfix == null) {
       return -1

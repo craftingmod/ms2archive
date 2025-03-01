@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import { fetchArticle, fetchLatestArticleId } from "./ArticleFetch.ts"
-import { BoardCategory } from "../base/BoardRoute.ts"
+import { BoardCategory } from "./BoardRoute.ts"
 import { Job } from "../base/MS2Job.ts"
 import fs from "node:fs/promises"
 

@@ -1,6 +1,6 @@
 import { load as loadDOM, type CheerioAPI } from "cheerio"
 import { requestBlob, requestMS2Get } from "./BaseFetch.ts"
-import { BoardRoute, type BoardCategory } from "../base/BoardRoute.ts"
+import { BoardRoute, type BoardCategory } from "./BoardRoute.ts"
 import { extractNumber, extractQuoteNum, parseSimpleTime, parseTime } from "../Util.ts"
 import { parseJobFromIcon } from "../base/MS2Job.ts"
 import { parseLevel } from "../base/MS2Level.ts"
@@ -21,11 +21,10 @@ export type MS2Article = NonNullable<Awaited<ReturnType<typeof fetchArticle>>>
 export async function fetchArticle(board: BoardCategory, articleId: number) {
   // Route마다 다른 파서
   const boardRoute = BoardRoute[board]  
-  // 깡 HTML
   const rawHTML = await requestMS2Get(
     boardRoute.detailRoute(articleId)
   )
-
+  
   // 404
   if (rawHTML == null) {
     return null
@@ -35,6 +34,12 @@ export async function fetchArticle(board: BoardCategory, articleId: number) {
 
   // 게시글을 찾을 수 없음
   if ($(".not_found").length > 0) {
+    return null
+  }
+
+  // 말도 안되는 게시글은 파싱 포기
+  // https://maplestory2.nexon.com/Board/Proposal/DetailView?sn=67949
+  if ($(".board_view_body > .board_view_header").length > 0) {
     return null
   }
 
@@ -314,7 +319,13 @@ export async function writeImages(article: MS2Article) {
     })
 
     if (!(await imgFile.exists())) {
-      await Bun.write(imgFile, binary)
+      try {
+        await Bun.write(imgFile, binary, {
+          createPath: true,
+        })
+      } catch (err) {
+        console.error(err)
+      }
     }
 
     writtenPath.push(`${parentPath}/${filename}`)

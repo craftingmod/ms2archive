@@ -23,15 +23,26 @@ export async function requestMS2Get(postfix: string) {
     debug(`${Chalk.green(reqURL)} 요청 (MS2Get)`)
 
     // 응답
-    const resp = await fetch(reqURL, {
-      method: "GET",
-      headers: {
-        "User-Agent": userAgent,
-      },
-      redirect: "manual",
-      referrer: referrer,
-    })
+    let resp:Response | null = null
+    try {
+      resp = await fetch(reqURL, {
+        method: "GET",
+        headers: {
+          "User-Agent": userAgent,
+        },
+        redirect: "manual",
+        referrer: referrer,
+        signal: AbortSignal.timeout(5000),
+      })
+    } catch (err) {
+      console.log(err)
+    }
     lastSent = Date.now()
+
+    // try catch 실패시 null
+    if (resp == null) {
+      break
+    }
 
     // 302 체크 (서버 과부하 or 404)
     if (resp.status === 302) {
@@ -71,6 +82,7 @@ export async function requestBlob(rawURL: string) {
       "Referer": referrer,
     },
     redirect: "follow",
+    signal: AbortSignal.timeout(10000),
   })
 
   let extension = resp.headers.get("Content-Type") ?? "image/jpeg"

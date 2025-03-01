@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite"
-import { BoardCategory } from "../base/BoardRoute.ts"
+import { BoardCategory } from "../fetch/BoardRoute.ts"
 import type { MS2Article } from "../fetch/ArticleFetch.ts"
 import { joinOrNull } from "../Util.ts"
 import type { MS2Comment } from "../base/MS2Comment.ts"
@@ -46,6 +46,7 @@ export class ArchiveStorage {
 
   public init() {
     this.createTable(BoardCategory.Free)
+    this.createTable(BoardCategory.Proposal)
   }
 
   protected createTable(board: BoardCategory) {

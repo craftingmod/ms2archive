@@ -1,5 +1,5 @@
 import chalk from "chalk"
-import type { BoardCategory } from "../base/BoardRoute.ts";
+import type { BoardCategory } from "../fetch/BoardRoute.ts";
 import { fetchArticle, fetchLatestArticleId, writeImages } from "../fetch/ArticleFetch.ts";
 import type { ArchiveStorage } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"

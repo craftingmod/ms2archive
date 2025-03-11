@@ -1,16 +1,27 @@
 import { load as loadDOM, type CheerioAPI } from "cheerio"
 import { requestBlob, requestMS2Get } from "./BaseFetch.ts"
-import { BoardRoute, type BoardCategory } from "./BoardRoute.ts"
+import { BoardRoute, BoardCategory } from "./BoardRoute.ts"
 import { extractNumber, extractQuoteNum, parseSimpleTime, parseTime } from "../Util.ts"
 import { parseJobFromIcon } from "../base/MS2Job.ts"
 import { parseLevel } from "../base/MS2Level.ts"
 import type { MS2Author } from "../base/MS2Author.ts"
-import { Element } from "domhandler"
+import type { Element } from "domhandler"
 import type { MS2Comment } from "../base/MS2Comment.ts"
 import { replaceStyle } from "./StyleReplacer.ts"
 import Bun from "bun"
+import { TZDate } from "@date-fns/tz"
+import { Timezone } from "../Config.ts"
+import Path from "node:path"
+import type { EventComment } from "../storage/ArchiveStorage.ts"
 
 export type MS2Article = NonNullable<Awaited<ReturnType<typeof fetchArticle>>>
+
+const resourceExt = [
+  "png", "jpg", "jpeg", "gif", "avif", "webp", "bmp",
+  "mp4", "m4v", "webm",
+  "m4a", "mp3", "ogg", "wma",
+  "zip", "7z", "rar",
+]
 
 /**
  * 게시글을 파싱합니다.
@@ -18,7 +29,7 @@ export type MS2Article = NonNullable<Awaited<ReturnType<typeof fetchArticle>>>
  * @param articleId 
  * @returns 
  */
-export async function fetchArticle(board: BoardCategory, articleId: number) {
+export async function fetchArticle(board: BoardCategory, articleId: number, skipComment = false) {
   // Route마다 다른 파서
   const boardRoute = BoardRoute[board]  
   const rawHTML = await requestMS2Get(
@@ -46,9 +57,11 @@ export async function fetchArticle(board: BoardCategory, articleId: number) {
   // 글 제목
   const title = $(".board_view_header .title").text().trim()
   // 글 작성시간
-  const writtenTime = parseTime(
-    $(".board_info1 .time").text()
-  )
+  const writtenTimeRaw = ($(".board_info1 .time").text() ?? "").trim()
+  let writtenTime = new TZDate(2025, 6, 7, 7, 7, Timezone)
+  if (writtenTimeRaw.length > 0) {
+    writtenTime = parseTime(writtenTimeRaw)
+  }
   // 글 조회수
   const viewed = extractNumber($(".board_info1 .hit").text()) ?? -1
   // 글 추천
@@ -88,8 +101,32 @@ export async function fetchArticle(board: BoardCategory, articleId: number) {
   const body = $(".board_view_body").html() ?? ""
   // 글 이미지 첨부파일 URL들
   const attachments = $(".board_view_body img").map((_:number, el:Element) => {
-    return $(el).attr("src")
-  }).toArray()
+    return ($(el).attr("src") ?? "").trim()
+  }).toArray().filter((v) => v.length > 0)
+
+  // a로 링크한 리소스 백업
+  const linkAttachments = $(".board_view_body a").map((_:number, el:Element) => {
+    return ($(el).attr("href") ?? "").trim()
+  }).toArray().filter((href) => {
+    if (href == null || href.length <= 0) {
+      return false
+    }
+    if (href.indexOf("file.nexon.com/") >= 0) {
+      return true
+    }
+    if (href.indexOf(".") < 0) {
+      return false
+    }
+    // a href가 확장자가 아는 확장자면
+    const ext = href.substring(href.lastIndexOf(".") + 1)
+    if (resourceExt.indexOf(ext) >= 0) {
+      return true
+    }
+
+    return false
+  })
+
+  attachments.push(...linkAttachments)
 
   // 댓글 수
   let commentCount = extractNumber(
@@ -109,7 +146,7 @@ export async function fetchArticle(board: BoardCategory, articleId: number) {
   }
 
   // 댓글 더 불러오기
-  while (comments.length < commentCount) {
+  while (comments.length < commentCount && !skipComment) {
     const commentHTML = await requestMS2Get(
       boardRoute.commentRoute(articleId, commentPage)
     )
@@ -144,10 +181,16 @@ export async function fetchArticle(board: BoardCategory, articleId: number) {
     cmt.commentIndex = comments[i-1].commentIndex - 1
   }
 
+  // Content DOM 정리 유무
+  let content = body.trim()
+  if ((boardRoute.cleanupDOM ?? true)) {
+    content = replaceStyle(content)
+  }
+
   return {
     articleId,
     title,
-    content: replaceStyle(body.trim()),
+    content,
     attachments,
 
     viewed,
@@ -225,13 +268,49 @@ export function parseComments($: CheerioAPI) {
  * @returns 마지막 글 번호
  */
 export async function fetchLatestArticleId(board: BoardCategory, plus1 = false) {
+  const articleList = await fetchArticleList(board, 1)
+
+  if (articleList == null || articleList.length <= 0) {
+    return null
+  }
+  const mValue = Math.max(...articleList.map((v) => v.articleId))
+
+  if (mValue === -1) {
+    return null
+  }
+  if (plus1) {
+    return mValue + 1
+  }
+  return mValue
+}
+
+/**
+ * 게시글 목록에서 하나의 게시글
+ */
+export interface ArticleHeader {
+  title: string,
+  summary: string,
+  articleId: number,
+  likeCount: number,
+  visitCount: number,
+  thumbnail: string,
+  rawHref: string,
+}
+
+export async function fetchArticleList(board: BoardCategory, page = 1) {
+  // 상점은 다른 파서 리다이렉트
+  if (board === BoardCategory.Cashshop) {
+    return fetchShopItemList(page)
+  }
+
+
   // Route마다 다른 파서
   const boardRoute = BoardRoute[board]  
   // 깡 HTML
   const rawHTML = await requestMS2Get(
-    boardRoute.listRoute
+    boardRoute.listRoute(page)
   )
-
+  
   // 404
   if (rawHTML == null) {
     return null
@@ -244,25 +323,162 @@ export async function fetchLatestArticleId(board: BoardCategory, plus1 = false) 
     return null
   }
 
-  // 타입 오류 있음
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hrefs = $(boardRoute.hrefSelector as any).map((_:number, el:Element) => {
-    const postfix = $(el).attr("href")
-    if (postfix == null) {
-      return -1
+  const articlesDOM = $(boardRoute.articleSelector).toArray()
+  const articles:ArticleHeader[] = []
+  
+  for (const article of articlesDOM) {
+    const $article = loadDOM(article)
+
+    const hrefURL = $article("a").attr("href") ?? ""
+    const articleId = extractNumber(hrefURL.match(/(s|sn)=\d+/)) ?? -1
+
+    const likeCount = extractNumber(
+      ($article(".like").text() ?? "").trim()
+    ) ?? -1
+
+    const visitCount = extractNumber(
+      ($article(".hit").text() ?? "").trim()
+    ) ?? -1
+
+    const titleRaw = ($article(".title").text() ?? "").trim()
+    let title = titleRaw
+    if (titleRaw.indexOf("\n") >= 0) {
+      title = titleRaw.substring(0, titleRaw.indexOf("\n")).trim()
     }
-    return extractNumber(postfix.match(/(s|sn)=\d+/)) ?? -1
-  }).toArray()
 
-  const mValue = Math.max(...hrefs)
+    const summary = ($article(".desc").text() ?? "").trim()
 
-  if (mValue === -1) {
+    // 섬네일 추출 (섬네일만 필요하면 raw img 쿼리)
+    let thumb = $article(".thumb img").attr("src") ?? ""
+    if ((boardRoute.listAsThumb ?? false) && (thumb.length <= 0)) {
+      thumb = $article("img").attr("src") ?? ""
+    }
+
+    articles.push({
+      title,
+      summary,
+      articleId,
+      likeCount,
+      visitCount,
+      thumbnail: thumb,
+      rawHref: hrefURL,
+    })
+  }
+
+  return articles
+}
+
+export async function fetchShopItemList(page = 1) {
+  // Route마다 다른 파서
+  const boardRoute = BoardRoute[BoardCategory.Cashshop]  
+  // 깡 HTML
+  const rawHTML = await requestMS2Get(
+    boardRoute.listRoute(page)
+  )
+  
+  // 404
+  if (rawHTML == null) {
     return null
   }
-  if (plus1) {
-    return mValue + 1
+
+  const $ = loadDOM(rawHTML)
+
+  // 게시글을 찾을 수 없음
+  if ($(".not_found").length > 0) {
+    return null
   }
-  return mValue
+
+  const articlesDOM = $(boardRoute.articleSelector).toArray()
+  const articles:ArticleHeader[] = []
+
+  for (const article of articlesDOM) {
+    const $article = loadDOM(article)
+
+    const hrefURL = $article("dt > a").attr("href") ?? ""
+    const articleId = extractNumber(hrefURL.match(/(s|sn)=\d+/)) ?? -1
+
+    const title = ($article("dd > .con_center > h1").text() ?? "").trim()
+
+    const summary = ($article("dd > .con_center > div").text() ?? "").trim()
+
+    // 섬네일 추출 (섬네일만 필요하면 raw img 쿼리)
+    const thumb = $article("dt img").attr("src") ?? ""
+
+    articles.push({
+      title,
+      summary,
+      articleId,
+      likeCount: -1,
+      visitCount: -1,
+      thumbnail: thumb,
+      rawHref: hrefURL,
+    })
+  }
+
+  return articles
+}
+
+export async function fetchEventComments(eventIndex:number, page = 1) {
+  const rawHTML = await requestMS2Get(
+    `Events/_20190725/_PartialCommentList?pn=${
+        page}&id=${eventIndex}&ls=12&bn=commentevents`
+  )
+  
+  // 404
+  if (rawHTML == null) {
+    return null
+  }
+
+  const root$ = loadDOM(rawHTML)
+
+  const commentsDOM = root$("ul > li").toArray()
+
+  const eventComments = [] as EventComment[]
+
+  for (const singleDOM of commentsDOM) {
+    const $ = loadDOM(singleDOM)
+
+    const charImage = $(".char_img img").attr("src") ?? ""
+
+    let charId = -1n
+    let imagePath = ""
+    if (charImage.length > 0 && charImage.indexOf("/profile/") >= 0) {
+      const imagePart1 = charImage.substring(charImage.indexOf("/profile/") + 9)
+      const imagePart2 = imagePart1.split("/")
+      charId = BigInt(imagePart2[2])
+  
+      const imageBlob = await requestBlob(charImage)
+  
+      imagePath = `data/images/fullevents/${eventIndex}/${charId}_${imagePart2[3]}`
+      
+      await Bun.write(Path.resolve(imagePath), imageBlob.blob as Blob, {
+        createPath: true,
+      })
+    }
+  
+    const charJob = parseJobFromIcon($(".char_info .job").attr("src") ?? "")
+  
+    const charName = $(".char_info .nickname").text().trim()
+  
+    const createdAt = parseSimpleTime(
+      $(".char_info .date").text().trim()
+    )
+  
+    const content = $(".comment").text().trim()
+
+    eventComments.push({
+      eventIndex,
+      commentIndex: -1,
+      content,
+      authorId: charId,
+      authorName: charName,
+      authorJob: charJob,
+      authorThumb: charImage,
+      createdAt: createdAt.getTime(),
+    } satisfies EventComment)
+  }
+
+  return eventComments
 }
 
 /**
@@ -278,7 +494,13 @@ export async function writeImages(article: MS2Article) {
   const writtenPath = [] as Array<string | null>
 
   for (let i = 0; i < article.attachments.length; i += 1) {
-    const url = article.attachments[i]
+    let url = article.attachments[i]
+    // 공백 예외처리
+    url = url.trim()
+    // `//` 예외처리
+    if (url.startsWith("//")) {
+      url = `https:${url}`
+    }
 
     let extension: string
     let binary: Blob | Uint8Array

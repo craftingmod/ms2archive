@@ -32,7 +32,7 @@ export async function requestMS2Get(postfix: string) {
         },
         redirect: "manual",
         referrer: referrer,
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       })
     } catch (err) {
       console.log(err)
@@ -82,7 +82,7 @@ export async function requestBlob(rawURL: string) {
       "Referer": referrer,
     },
     redirect: "follow",
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(20000),
   })
 
   let extension = resp.headers.get("Content-Type") ?? "image/jpeg"
@@ -99,3 +99,18 @@ export async function requestBlob(rawURL: string) {
   }
 }
 
+export async function requestText(rawURL: string) {
+  debug(`${Chalk.green(rawURL)} 요청 (Text)`)
+
+  const resp = await fetch(rawURL, {
+    method: "GET",
+    headers: {
+      "User-Agent": userAgent,
+      "Referer": referrer,
+    },
+    redirect: "follow",
+    signal: AbortSignal.timeout(20000),
+  })
+
+  return resp.text()
+}

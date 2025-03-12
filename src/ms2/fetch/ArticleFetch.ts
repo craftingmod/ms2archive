@@ -421,7 +421,7 @@ export async function fetchShopItemList(page = 1) {
 export async function fetchEventComments(eventIndex:number, page = 1) {
   const rawHTML = await requestMS2Get(
     `Events/_20190725/_PartialCommentList?pn=${
-        page}&id=${eventIndex}&ls=12&bn=commentevents`
+        page}&id=${eventIndex}&ls=30&bn=commentevents`
   )
   
   // 404
@@ -448,12 +448,14 @@ export async function fetchEventComments(eventIndex:number, page = 1) {
       charId = BigInt(imagePart2[2])
   
       const imageBlob = await requestBlob(charImage)
-  
-      imagePath = `data/images/fullevents/${eventIndex}/${charId}_${imagePart2[3]}`
+
+      if (imageBlob != null) {
+        imagePath = `data/images/fullevents/${eventIndex}/${charId}_${imagePart2[3]}`
       
-      await Bun.write(Path.resolve(imagePath), imageBlob.blob as Blob, {
-        createPath: true,
-      })
+        await Bun.write(Path.resolve(imagePath), imageBlob.blob as Blob, {
+          createPath: true,
+        }) 
+      }
     }
   
     const charJob = parseJobFromIcon($(".char_info .job").attr("src") ?? "")
@@ -519,6 +521,9 @@ export async function writeImages(article: MS2Article) {
     } else if (url.startsWith("http")) {
       try {
         const req = await requestBlob(url)
+        if (req == null) {
+          throw new Error(`${url} is null!`)
+        }
         extension = req.extension
         binary = req.blob as Blob
       } catch (err) {

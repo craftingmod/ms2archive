@@ -1,3 +1,4 @@
+import { sleep } from "bun"
 import { Archiver } from "./ms2/archive/Archiver.ts"
 import { Fixer } from "./ms2/archive/Fixer.ts"
 import { getAllFullscreenEvents } from "./ms2/archive/Lister.ts"
@@ -23,7 +24,6 @@ const fixer = new Fixer(storage)
 // await archiver.archiveThumbList(BoardCategory.Cashshop)
 // await fixer.addShopSummary(BoardCategory.Cashshop)
 
-/*
 const links = (await fs.readFile("./list.txt", {encoding: "utf8"})).split("\n")
 const fseParser = new FSEFetcher()
 for (let link of links) {
@@ -33,8 +33,9 @@ for (let link of links) {
   }
   await fseParser.fetchFSE(link)
 }
-  */
-
+/*
 for (let i = 1; i <= 9; i += 1) {
   await archiver.archiveEventComments(i)
 }
+*/
+

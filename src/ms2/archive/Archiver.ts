@@ -101,7 +101,7 @@ export class Archiver {
   public async archiveEventComments(eventIndex: number) {
     const comments = [] as EventComment[]
     // 끝까지 파싱
-    for (let page = 1; true; page += 1) {
+    for (let page = 1; page <= 100; page += 1) {
       const pagedComments = await fetchEventComments(eventIndex, page)
       if (pagedComments == null) {
         throw new Error("Comments should be not null!")

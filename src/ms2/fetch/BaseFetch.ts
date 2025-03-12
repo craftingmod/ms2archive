@@ -85,6 +85,10 @@ export async function requestBlob(rawURL: string) {
     signal: AbortSignal.timeout(20000),
   })
 
+  if (resp.status !== 200) {
+    return null
+  }
+
   let extension = resp.headers.get("Content-Type") ?? "image/jpeg"
   extension = extension.substring(extension.lastIndexOf("/") + 1)
   if (extension === "jpeg") {

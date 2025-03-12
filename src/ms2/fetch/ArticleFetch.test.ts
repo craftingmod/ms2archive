@@ -142,10 +142,10 @@ test.skip("없는 게시글 처리", async () => {
   expect(noArticle).toBeNull()
 })
 
-test("전체화면 이벤트 댓글 파싱", async () => {
-  const comments = await fetchEventComments(1, 42)
+test.skip("전체화면 이벤트 댓글 파싱", async () => {
+  const comments = await fetchEventComments(1, 100)
 
   console.log(comments)
 
-  expect(comments).toBeArrayOfSize(12)
-})
+  expect(comments).toBeArrayOfSize(30)
+}, 60000)

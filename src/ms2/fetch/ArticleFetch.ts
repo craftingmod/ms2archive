@@ -14,6 +14,8 @@ import { Timezone } from "../Config.ts"
 import Path from "node:path"
 import type { EventComment } from "../storage/ArchiveStorage.ts"
 
+export const UnknownTime = new TZDate(2025, 6, 7, 7, 7, Timezone)
+
 export type MS2Article = NonNullable<Awaited<ReturnType<typeof fetchArticle>>>
 
 const resourceExt = [
@@ -58,7 +60,7 @@ export async function fetchArticle(board: BoardCategory, articleId: number, skip
   const title = $(".board_view_header .title").text().trim()
   // 글 작성시간
   const writtenTimeRaw = ($(".board_info1 .time").text() ?? "").trim()
-  let writtenTime = new TZDate(2025, 6, 7, 7, 7, Timezone)
+  let writtenTime = UnknownTime
   if (writtenTimeRaw.length > 0) {
     writtenTime = parseTime(writtenTimeRaw)
   }
@@ -302,6 +304,9 @@ export async function fetchArticleList(board: BoardCategory, page = 1) {
   if (board === BoardCategory.Cashshop) {
     return fetchShopItemList(page)
   }
+  if (board === BoardCategory.Events) {
+    return fetchEventsList(page)
+  }
 
 
   // Route마다 다른 파서
@@ -416,6 +421,56 @@ export async function fetchShopItemList(page = 1) {
   }
 
   return articles
+}
+
+export async function fetchEventsList(page = 1) {
+   // Route마다 다른 파서
+   const boardRoute = BoardRoute[BoardCategory.Events]  
+   // 깡 HTML
+   const rawHTML = await requestMS2Get(
+     boardRoute.listRoute(page)
+   )
+   
+   // 404
+   if (rawHTML == null) {
+     return null
+   }
+ 
+   const $ = loadDOM(rawHTML)
+ 
+   // 게시글을 찾을 수 없음
+   if ($(".not_found").length > 0) {
+     return null
+   }
+ 
+   const articlesDOM = $(boardRoute.articleSelector).toArray()
+   const articles:ArticleHeader[] = []
+ 
+   for (const article of articlesDOM) {
+     const $article = loadDOM(article)
+ 
+     const hrefURL = $article("li > a").attr("href") ?? ""
+     const articleId = extractNumber(hrefURL.match(/(s|sn)=\d+/)) ?? -1
+ 
+     const title = ($article("li .info .title").text() ?? "").trim()
+ 
+     const summary = ($article("li .info .desc").text() ?? "").trim()
+ 
+     // 섬네일 추출 (섬네일만 필요하면 raw img 쿼리)
+     const thumb = $article("li .thumb img").attr("src") ?? ""
+ 
+     articles.push({
+       title,
+       summary,
+       articleId,
+       likeCount: -1,
+       visitCount: -1,
+       thumbnail: thumb,
+       rawHref: hrefURL,
+     })
+   }
+ 
+   return articles
 }
 
 export async function fetchEventComments(eventIndex:number, page = 1) {

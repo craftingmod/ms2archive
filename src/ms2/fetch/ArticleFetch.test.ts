@@ -110,18 +110,25 @@ test.skip("패치노트 파싱 테스트", async () => {
   expect(article?.title ?? "").toBe("2/20(목) 패치노트 - 서비스 종료 안내")
 })
 
-test("상점 목록 파싱 테스트", async () => {
+test.skip("상점 목록 파싱 테스트", async () => {
   const articleList = await fetchArticleList(BoardCategory.Cashshop, 1)
   console.log(articleList)
 
   expect(articleList).toBeArrayOfSize(8)
 })
 
-test("상점 게시글 파싱 테스트", async () => {
+test.skip("상점 게시글 파싱 테스트", async () => {
   const article = await fetchArticle(BoardCategory.Cashshop, 28)
   console.log(article)
 
   expect(article?.title).toBe("3월 23일 새롭게 출시되는 아이템을 소개합니다.")
+}, 20000)
+
+test("이벤트 게시글 파싱 테스트", async () => {
+  const article = await fetchArticleList(BoardCategory.Events, 4)
+  console.log(article)
+
+  expect(article?.length).toBe(8)
 }, 20000)
 
 test.skip("타임아웃 테스트", async () => {

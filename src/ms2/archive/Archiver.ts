@@ -1,9 +1,10 @@
 import chalk from "chalk"
 import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts";
-import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, writeImages, type ArticleHeader, type MS2Article } from "../fetch/ArticleFetch.ts";
+import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, UnknownTime, writeImages, type ArticleHeader, type MS2Article } from "../fetch/ArticleFetch.ts";
 import type { ArchiveStorage, EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { sleep } from "bun";
+import { Job } from "../base/MS2Job.ts";
 
 const debug = Debug("ms2archive:Archiver")
 
@@ -57,7 +58,6 @@ export class Archiver {
 
     // 1. 매거진 리스트 뽑기
     const news: ArticleHeader[] = []
-    // eslint-disable-next-line no-constant-condition
     for (let page = 1; true; page += 1) {
       const fetchedArticles = await fetchArticleList(board, page)
       if (fetchedArticles == null) {
@@ -77,7 +77,7 @@ export class Archiver {
       const article = await fetchArticle(
         board, header.articleId,
       )
-      debug(`Archiving News: ${archiveCount}/${news.length-1}`)
+      debug(`Archiving News: ${archiveCount}/${news.length - 1}`)
 
       if (article == null) {
         archiveCount -= 1
@@ -91,7 +91,7 @@ export class Archiver {
         article.attachments.unshift(thumb)
       }
 
-      this.insertArticle(board, article)
+      await this.insertArticle(board, article)
     }
 
   }
@@ -122,6 +122,90 @@ export class Archiver {
 
     // 넣기
     this.storage.insertEventComments(...comments)
+  }
+
+  public async archiveEvents() {
+    // 1. 매거진 리스트 뽑기
+    const events: Array<ArticleHeader & {hasId: boolean}> = []
+    for (let page = 1; true; page += 1) {
+      const fetchedArticles = await fetchArticleList(BoardCategory.Events, page)
+      if (fetchedArticles == null) {
+        page -= 1
+        await sleep(2000)
+        continue
+      }
+      events.push(...fetchedArticles.map((v) => ({
+        ...v,
+        hasId: v.articleId !== -1,
+      })))
+      if (fetchedArticles.length <= 0) {
+        break
+      }
+    }
+    // 2. ID 보정
+    let latestId = -1
+    let latestIdIndex = -1
+    for (let i = 0; i < events.length; i += 1) {
+      const event = events[i]
+      if (event.articleId !== -1) {
+        latestId = event.articleId
+        latestIdIndex = i
+        continue
+      }
+      // articleId가 -1이 아니면 보정
+      event.articleId = latestId - Math.abs(i - latestIdIndex)
+    }
+    // 3. 넣기
+    const lastArticleId = this.storage.getLowestArticleId(BoardCategory.Events)
+    for (let archiveCount = 0; archiveCount < events.length; archiveCount += 1) {
+      const header = events[archiveCount]
+
+      if (lastArticleId != null && header.articleId >= lastArticleId) {
+        continue
+      }
+
+      if (!header.hasId || header.articleId >= 1000) {
+        // 더미
+        await this.insertArticle(BoardCategory.Events, {
+          articleId: header.articleId,
+          title: header.title,
+          content: header.rawHref,
+          attachments: [header.thumbnail.trim()],
+          viewed: -1,
+          liked: -1,
+          tags: [],
+          createdAt: UnknownTime,
+          author: {
+            job: Job.Beginner,
+            level: -1,
+            nickname: "GM",
+          },
+          commentCount: 0,
+          comments: [],
+          boardName: BoardCategory.Events,
+        })
+        continue
+      }
+
+      const article = await fetchArticle(
+        BoardCategory.Events, header.articleId,
+      )
+      debug(`Archiving News: ${archiveCount}/${events.length - 1}`)
+
+      if (article == null) {
+        archiveCount -= 1
+        await sleep(5000)
+        continue
+      }
+
+      // 섬네일 추가
+      const thumb = header.thumbnail.trim()
+      if (thumb.length > 0) {
+        article.attachments.unshift(thumb)
+      }
+
+      await this.insertArticle(BoardCategory.Events, article)
+    }
   }
 
   protected async insertArticle(board: BoardCategory, article: MS2Article) {

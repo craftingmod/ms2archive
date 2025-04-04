@@ -140,7 +140,6 @@ export class ArchiveStorage {
     $createdAt,
     $commentCount,
     $tags,
-    $summary,
     $content,
     $attachments
   )`).run({

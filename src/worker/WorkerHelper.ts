@@ -11,7 +11,15 @@ export type WorkerInput<I> = {
 
 export class WorkerHelper<I, O> {
   public readonly workers: Worker[]
-  public onCompleteOne?:(value: O | null, done: number) => unknown
+  public onCompleteOne?: (value: O | null, done: number) => unknown
+
+  private inputIndex = 0
+  private completeCount = 0
+  private outputs: (O | null)[] = []
+  private res?: (results: (O | null)[]) => unknown
+  private inputs: I[] = []
+
+
   public constructor(
     protected scriptURL: URL,
     protected threads: number,
@@ -21,6 +29,7 @@ export class WorkerHelper<I, O> {
       const worker = new Worker(scriptURL, {
         type: "module",
       })
+      worker.onmessage = (ev) => this.handleWorkerMessage(ev)
       this.workers[i] = worker
     }
   }
@@ -31,68 +40,61 @@ export class WorkerHelper<I, O> {
     })
   }
 
-  public requestInternal(inputs: I[], res: (results: (O | null)[]) => unknown) {
-    console.log(inputs.length)
+  private requestInternal(inputs: I[], res: (results: (O | null)[]) => unknown) {
     if (inputs.length <= 0) {
       res([])
       return
     }
 
-    const outputs = new Array<O | null>(inputs.length)
-    // Input Index
-    let inputIndex = 0
-    // Complete count
-    let completeCount = 0
+    this.inputs = inputs
+    this.outputs = new Array<O | null>(inputs.length)
+    this.inputIndex = 0
+    this.completeCount = 0
+    this.res = res
 
-    for (let i = 0; i < this.threads; i += 1) {
-      const worker = this.workers[i]
-      // 처리부분 등록
-      worker.onmessage = (ev) => {
-        const data = ev.data as WorkerReturn<O>
-
-        // 에러 처리
-        let result = null as O | null
-        if (data.error != null) {
-          console.error(data.error)
-        } else {
-          result = data.result
-        }
-        outputs[data.workIndex] = result
-        
-        // 핸들링
-        if (this.onCompleteOne != null) {
-          this.onCompleteOne(result, completeCount)
-        }
-        completeCount += 1
-        
-        // 자신이 마지막인지 체크
-        if (data.workIndex >= inputs.length - 1) {
-          // this.close()
-          res(outputs)
-        }
-
-        // 인덱스 +1
-        inputIndex += 1
-        if (inputIndex >= inputs.length) {
-          return
-        }
-        
-        // 다음 Input 처리
-        worker.postMessage({
-          workIndex: inputIndex,
-          data: inputs[inputIndex],
-        } satisfies WorkerInput<I>)
-      }
-      if (i >= inputs.length) {
-        continue
-      }
-      // worker 실행
-      worker.postMessage({
-        workIndex: inputIndex,
-        data: inputs[inputIndex],
-      } satisfies WorkerInput<I>)
-      inputIndex += 1
+    for (let i = 0; i < Math.min(this.threads, inputs.length); i += 1) {
+      this.sendNextTask(this.workers[i])
     }
+
+  }
+
+  /**
+   * Worker message handling
+   * @param ev Event
+   */
+  private handleWorkerMessage(ev: Bun.MessageEvent) {
+    const data = ev.data as WorkerReturn<O>
+
+    let result = null as O | null
+    if (data.error != null) {
+      console.error(data.error)
+    } else {
+      result = data.result
+    }
+    this.outputs[data.workIndex] = result
+
+    if (this.onCompleteOne != null) {
+      this.onCompleteOne(result, this.completeCount)
+    }
+    this.completeCount += 1
+
+    if (data.workIndex >= this.inputs.length - 1) {
+      this.res?.(this.outputs)
+      return
+    }
+
+    this.sendNextTask(ev.target as Worker)
+  }
+
+  private sendNextTask(worker: Worker) {
+    if (this.inputIndex >= this.inputs.length) {
+      return
+    }
+    worker.postMessage({
+      workIndex: this.inputIndex,
+      data: this.inputs[this.inputIndex],
+    } satisfies WorkerInput<I>)
+    this.inputIndex += 1
   }
 
   public close() {

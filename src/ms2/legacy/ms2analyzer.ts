@@ -127,6 +127,10 @@ export class MS2Analyzer {
     // 던전 Table
     const dungeonTable = this.ms2db.dungeonHistories.get(this.dungeonId)
 
+    if (dungeonTable == null) {
+      throw new Error("DungeonTable is null!")
+    }
+
     // this.partyInfoBuffer.push(...pageParties)
     for (const party of pageParties) {
       // const nowTime = Date.now()

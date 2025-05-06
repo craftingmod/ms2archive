@@ -62,7 +62,7 @@ export class WorkerHelper<I, O> {
    * Worker message handling
    * @param ev Event
    */
-  private handleWorkerMessage(ev: Bun.MessageEvent) {
+  private handleWorkerMessage(ev: MessageEvent) {
     const data = ev.data as WorkerReturn<O>
 
     let result = null as O | null

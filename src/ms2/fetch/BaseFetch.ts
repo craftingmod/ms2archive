@@ -67,6 +67,26 @@ export async function requestMS2Get(postfix: string) {
   return null // 응답이 없음
 }
 
+async function requestMS2GetRaw(postfix: string, useMS2Agent = false) {
+  const reqURL = `${baseURL}/${postfix}`
+
+  if (timeDelta < requestCooltime) {
+    await sleep(requestCooltime - timeDelta)
+  }
+
+  const resp = await fetch(reqURL, {
+    method: "GET",
+    headers: {
+      "User-Agent": userAgent,
+    },
+    redirect: "manual",
+    referrer: referrer,
+    signal: AbortSignal.timeout(10000),
+  })
+  lastSent = Date.now()
+
+}
+
 /**
  * 기타 URL에서 Blob을 GET
  * @param rawURL 아무 URL

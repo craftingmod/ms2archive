@@ -93,8 +93,7 @@ function isCommonResources(url: string) {
 function string2Base64(str: string) {
   const utf8Bytes = new TextEncoder().encode(str)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (utf8Bytes as any).toBase64() as string
+  return utf8Bytes.toBase64() as string
 }
 
 export function queryImageResources(content: string) {
@@ -297,7 +296,7 @@ export class FSEFetcher {
 
     const localPath = await this.getLocalPathSafety(url, eventId, Bun.hash(await resource.blob.arrayBuffer()))
 
-    await Bun.write(localPath, resource.blob as Blob, {
+    await Bun.write(localPath, resource.blob as unknown as Blob, {
       createPath: true,
     })
 

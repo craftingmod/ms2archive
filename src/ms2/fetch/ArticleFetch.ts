@@ -507,7 +507,7 @@ export async function fetchEventComments(eventIndex:number, page = 1) {
       if (imageBlob != null) {
         imagePath = `data/images/fullevents/${eventIndex}/${charId}_${imagePart2[3]}`
       
-        await Bun.write(Path.resolve(imagePath), imageBlob.blob as Blob, {
+        await Bun.write(Path.resolve(imagePath), imageBlob.blob as unknown as Blob, {
           createPath: true,
         }) 
       }
@@ -564,8 +564,7 @@ export async function writeImages(article: MS2Article) {
     if (url.startsWith("data:")) {
       extension = url.substring(url.indexOf("/") + 1, url.indexOf(";"));
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        binary = (Uint8Array as any).fromBase64(url.substring(
+        binary = Uint8Array.fromBase64(url.substring(
           url.indexOf("base64") + 7,
         )) as Uint8Array
       } catch (err) {
@@ -580,7 +579,7 @@ export async function writeImages(article: MS2Article) {
           throw new Error(`${url} is null!`)
         }
         extension = req.extension
-        binary = req.blob as Blob
+        binary = req.blob as unknown as Blob
       } catch (err) {
         console.error(err)
         writtenPath.push(null)

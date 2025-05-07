@@ -17,3 +17,5 @@ const fixer = new Fixer(storage)
 // await fixer.analyzeAttachments(BoardCategory.News)
 // await archiver.archiveThumbList(BoardCategory.Cashshop)
 // await fixer.addShopSummary(BoardCategory.Cashshop)
+
+await archiver.archiveGuildRank()

@@ -5,12 +5,76 @@ import type { ArchiveStorage, EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { sleep } from "bun";
 import { Job } from "../base/MS2Job.ts";
+import { RankStorage } from "../storage/RankStorage.ts";
+import { fetchGuildRankList, searchLatestPage } from "../legacy/ms2fetch.ts";
+import type { GuildRankStoreInfo } from "../legacy/database/GuildRankInfo.ts";
 
 const debug = Debug("ms2archive:Archiver")
 
 export class Archiver {
+
+  public rankStorage = new RankStorage()
+
   public constructor(protected storage: ArchiveStorage) {
 
+  }
+
+  public async archiveGuildRank() {
+    const localHighestRankData = (this.rankStorage.database.prepare(
+      `SELECT MAX(rank) FROM guildRankStore;`
+    ).get()) as { ["MAX(rank)"]: bigint | undefined }
+
+    const localHighestRank = Number(localHighestRankData["MAX(rank)"] ?? 0)
+    const localHighestPage = Math.max(Math.floor((localHighestRank / 10)), 1)
+    
+    /*
+    const remoteHighestRankPage = await searchLatestPage(
+      (page) => fetchGuildRankList(page),
+      Math.floor((localHighestRank / 10)),
+    )
+      */
+    // Atomic value
+    const remoteHighestRankPage = 13487
+
+    const rankBuffer = [] as GuildRankStoreInfo[]
+
+    for (let page = localHighestPage; page <= remoteHighestRankPage; page += 1) {
+      const guildRankList = await fetchGuildRankList(page)
+      if (guildRankList == null) {
+        continue
+      }
+      const guildRankListFiltered = (page === localHighestPage) ? guildRankList.filter(
+        (rank) => rank.rank <= localHighestRank
+      ) : guildRankList
+      
+
+      debug(`Archiving Guild ranks: ${
+        chalk.yellow(page)
+      }/${
+        chalk.green(remoteHighestRankPage)
+      } pages`)
+      rankBuffer.push(
+        ...guildRankListFiltered.map(
+          (rank) => ({
+            guildId: rank.guildId,
+            guildName: rank.guildName,
+            guildProfileURL: rank.guildProfileURL,
+            leaderName: rank.leaderName,
+            leaderCharacterId: null,
+            trophyCount: rank.trophyCount,
+            rank: rank.rank,
+          })
+        )
+      )
+
+      if (page % 100 === 0) {
+        // flush rankBuffer
+        this.rankStorage.guildRankStore.insertMany(rankBuffer)
+        rankBuffer.splice(0, rankBuffer.length)
+      }
+    }
+    // flush rankBuffer
+    this.rankStorage.guildRankStore.insertMany(rankBuffer)
   }
 
   /**

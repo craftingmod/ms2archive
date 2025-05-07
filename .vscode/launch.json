@@ -17,7 +17,7 @@
 
       // The environment variables to pass to the program.
       "env": {
-        "DEBUG": "ms2archive:*",
+        "DEBUG": "ms2archive:*,ms2:*",
         "LOGLEVEL": "1",
       },
 

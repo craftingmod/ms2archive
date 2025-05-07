@@ -2,18 +2,38 @@ import { sleep } from "bun"
 import { baseURL, maxRetry, referrer, requestCooltime, userAgent } from "../Config.ts"
 import Debug from "debug"
 import Chalk from "chalk"
+import { requestMS2GetInternal } from "../legacy/ms2fetch.ts"
 
 const debug = Debug("ms2archive:BaseFetch")
 
 let lastSent = -1
-
 
 /**
  * MS2 URL에서 text를 GET
  * @param postfix MS2 Postfix URL
  * @returns HTML Text
  */
-export async function requestMS2Get(postfix: string) {
+export async function requestMS2Get(postfix: string, options = {
+  headers: {} as Record<string, string>,
+  params: {} as Record<string, string>,
+  ignore302: false,
+}) {
+  const resp = await requestMS2GetInternal(`${baseURL}/${postfix}`, options.headers, options.params, options.ignore302)
+  // 200인 경우 값 반환
+  if (resp.statusCode === 200) {
+    return resp.body
+  }
+  // 나머지는 null 반호나
+  return null
+}
+
+/**
+ * MS2 URL에서 text를 GET
+ * @param postfix MS2 Postfix URL
+ * @returns HTML Text
+ */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+async function _requestMS2Get(postfix: string) {
   const reqURL = `${baseURL}/${postfix}`
   for (let i = 0; i < maxRetry; i += 1) {
     const timeDelta = Date.now() - lastSent
@@ -23,7 +43,7 @@ export async function requestMS2Get(postfix: string) {
     debug(`${Chalk.green(reqURL)} 요청 (MS2Get)`)
 
     // 응답
-    let resp:Response | null = null
+    let resp: Response | null = null
     try {
       resp = await fetch(reqURL, {
         method: "GET",
@@ -66,26 +86,7 @@ export async function requestMS2Get(postfix: string) {
   // throw new Error("Failed to fetch data.")
   return null // 응답이 없음
 }
-
-async function requestMS2GetRaw(postfix: string, useMS2Agent = false) {
-  const reqURL = `${baseURL}/${postfix}`
-
-  if (timeDelta < requestCooltime) {
-    await sleep(requestCooltime - timeDelta)
-  }
-
-  const resp = await fetch(reqURL, {
-    method: "GET",
-    headers: {
-      "User-Agent": userAgent,
-    },
-    redirect: "manual",
-    referrer: referrer,
-    signal: AbortSignal.timeout(10000),
-  })
-  lastSent = Date.now()
-
-}
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**
  * 기타 URL에서 Blob을 GET

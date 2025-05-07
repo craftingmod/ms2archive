@@ -13,7 +13,7 @@ import { Agent as HttpsAgent } from "https"
 import Debug from "debug"
 import { WorldChatType } from "./database/WorldChatInfo.js"
 import { Job } from "./ms2CharInfo.js"
-import type { CharacterInfo, CharacterMemberInfo, DungeonClearedCharacterInfo,MainCharacterInfo, TrophyCharacterInfo } from "./ms2CharInfo.js"
+import type { CharacterInfo, CharacterMemberInfo, DungeonClearedCharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "./ms2CharInfo.js"
 import { addMonths, isAfter, isBefore, startOfMonth, subMonths } from "date-fns"
 import { type MS2CapsuleItem, MS2ItemTier, MS2Tradable } from "./ms2gatcha.js"
 import type { RawGuestBookInfo } from "./database/GuestBookInfo.js"
@@ -437,6 +437,79 @@ export async function searchLatestClearedPage(dungeon: DungeonId, startPage: num
   }
 }
 
+export async function searchLatestPage(queryFn: (page: number) => Promise<unknown[] | null>, startPage: number = 1) {
+  let minPage = Math.max(startPage, 1)
+  let maxPage = Math.max(startPage, 1)
+  let determined = false
+  // 1. Check the point of no query (결과가 없는 지점을 빠르게 탐색하여 대략적인 상한선 설정)
+  while (true) {
+    try {
+      const queryInfo = await queryFn(minPage)
+      if (queryInfo == null) {
+        throw new Error("파싱값에 오류가 있습니다!")
+      }
+      if (queryInfo.length === 10) { // 페이지가 꽉 찼으면 (10개 항목 가정)
+        minPage *= 2 // 탐색 범위를 두 배로 늘림
+      } else if (queryInfo.length === 0) { // 페이지에 결과가 없으면
+        maxPage = minPage // 현재 minPage를 상한선으로 설정
+        minPage /= 2     // 이전 minPage (결과가 있었을 수 있는)로 돌아감
+        break
+      } else { // 페이지가 꽉 차지 않았지만 결과가 있으면 (0 < length < 10)
+        determined = true // 마지막 페이지를 찾았다고 간주
+        break
+      }
+    } catch (err) {
+      if (err instanceof InternalServerError) {
+        if (err.statusCode === 302 && err.responseHTML.indexOf("Object moved") >= 0) {
+          // 302 에러 (서버 과부하 등) 발생 시, 데이터가 있을 수 있으므로 계속 탐색
+          minPage *= 2
+        } else {
+          throw err
+        }
+      }
+      // 다른 에러는 그대로 throw (함수 시그니처에 따라 에러 처리 필요)
+      throw err
+    }
+  }
+  if (!determined) {
+    // 2. min-max binary search (이진 탐색으로 정확한 마지막 페이지 찾기)
+    while (minPage < maxPage) {
+      const midPage = Math.floor((minPage + maxPage) / 2)
+      const clearedParties = await queryFn(midPage)
+      // 반환값이 null이면 = 서버 에러면 값을 확신할 수 없으므로 종료
+      if (clearedParties == null) {
+        throw new Error("파싱값에 오류가 있습니다!")
+      }
+
+      if (clearedParties.length === 10) { // 중간 페이지가 꽉 찼으면
+        minPage = midPage // 최소 범위를 중간 페이지로 올림 (중간 페이지 또는 그 이상에 답이 있음)
+        if (minPage + 1 === maxPage) { // minPage와 maxPage가 인접하면 탐색 종료
+          break
+        }
+      } else if (clearedParties.length === 0) { // 중간 페이지에 결과가 없으면
+        maxPage = midPage // 최대 범위를 중간 페이지로 내림 (중간 페이지 미만에 답이 있음)
+      } else { // 중간 페이지가 꽉 차지 않았지만 결과가 있으면 (0 < length < 10)
+        minPage = midPage // 이 페이지가 마지막 페이지임
+        maxPage = midPage
+        break
+      }
+    }
+  }
+  // 3. Final Check (최종 확인)
+  // 이진 탐색 후 minPage는 마지막 페이지이거나 그 직전 페이지일 수 있음
+  const lastParties = await queryFn(minPage + 1)
+  // 반환값이 null이면 = 서버 에러면 값을 확신할 수 없으므로 종료
+  if (lastParties == null) {
+    throw new Error("파싱값에 오류가 있습니다!")
+  }
+
+  if (lastParties.length >= 1) { // minPage + 1 에도 결과가 있으면
+    return minPage + 1 // minPage + 1이 마지막 페이지
+  } else {
+    return minPage // minPage가 마지막 페이지
+  }
+}
+
 export async function fetchGuildRank(guildname: string, queryUser: boolean = false) {
   const { body, statusCode } = await requestGet(guildTrophyURL, {
     "User-Agent": userAgent,
@@ -478,6 +551,77 @@ export async function fetchGuildRank(guildname: string, queryUser: boolean = fal
   } else {
     return null
   }
+}
+
+export interface GuildRank {
+  rank: number,
+  guildId: bigint,
+  guildName: string,
+  guildProfileURL: string | null,
+  leaderName: string,
+  leaderInfo: CharacterInfo & { profileURL: string } | null,
+  trophyCount: number,
+}
+
+/**
+ * 길드 순위 n페이지를 파싱합니다.
+ * @param page 
+ * @returns 
+ */
+export async function fetchGuildRankList(page = 1) {
+  const { body, statusCode } = await requestGet(guildTrophyURL, {
+    "User-Agent": userAgent,
+    "Referer": guildTrophyURL,
+  }, {
+    tp: "realtime",
+    page: String(page),
+  })
+
+  if (statusCode !== 200) {
+    return null
+  }
+
+  const $ = loadDOM(body)
+  // check response is ok
+  validateTableTitle($, "길드원 전체의 트로피 개수")
+  // check no person
+  if ($(".no_data").length >= 1) {
+    return null
+  }
+
+  const guildList = [] as GuildRank[]
+
+  // 길드원 목록 뽑기
+  const elements = $(".rank_list_guild > .board tbody tr").toArray()
+
+  if (elements.length <= 0) {
+    return guildList
+  }
+
+  // 길드 목록 추가
+  for (const element of elements) {
+    const $el = $(element)
+
+    const rank = getRankFromElement($el)
+    const guildProfileURL = $el.find(".character > img").attr("src") ?? null
+    const guildId = queryCIDFromImageURL(guildProfileURL ?? "")
+    const guildName = $el.find(".character").text().trim()
+    const leaderName = $el.find(":nth-child(3)").text().trim()
+    const leaderInfo: CharacterInfo & { profileURL: string } | null = null
+    const trophyCount = Number.parseInt($el.find(":nth-child(4)").text().trim().replace(/,/g, ""))
+
+    guildList.push({
+      rank,
+      guildId,
+      guildName,
+      guildProfileURL,
+      leaderName,
+      leaderInfo,
+      trophyCount,
+    })
+  }
+
+  return guildList
 }
 
 export async function fetchWorldChat() {
@@ -652,6 +796,8 @@ export async function fetchGuestBook(token: string, aid: bigint, page: number = 
     comments,
   }
 }
+
+export const requestMS2GetInternal = requestGet
 
 async function requestGet(url: string, headers: Record<string, string>, params: Record<string, string>, ignore302 = false) {
   const timeDelta = Date.now() - lastRespTime

@@ -1,7 +1,8 @@
-import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, getRankFromElement, guildTrophyPostfix, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, searchLatestPage, trophyPostfix } from "../util/MS2FetchUtil.ts"
+import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, darkStreamPostfix, getRankFromElement, guildTrophyPostfix, parseCommaNumber, parseYMDString, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, searchLatestPage, trophyPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2FormattedList } from "./MS2BaseFetch.ts"
 import type { BossClearedRankInfo, BossPartyInfo, BossPartyLeaderInfo, BossPartyMemberInfo, TrophyRankInfo } from "../struct/MS2RankInfo.ts"
 import type { DungeonId } from "../struct/MS2DungeonId.ts"
+import { JobCode, Job } from "../struct/MS2CharInfo.ts"
 
 export interface GuildRank {
   rank: number,
@@ -198,7 +199,7 @@ export async function fetchBossClearedRate(
     const characterId = queryCIDFromImageURL(imageURL)
 
     const clearedCount = Number.parseInt($i.find(".record").text().replace(",", ""))
-    
+
     return {
       characterId,
       job,
@@ -249,4 +250,51 @@ export async function fetchBossClearedLastPage(
     (page) => fetchBossClearedByDate(dungeonId, page, false),
     startPage,
   )
+}
+
+/**
+ * 다크 스트림 기록을 가져옵니다.
+ * @param fields 요구 fields
+ * @returns 다크 스트림 기록
+ */
+export async function fetchDarkStreamRankList(fields: {
+  job: Job,
+  season: number,
+  page: number,
+}) {
+  const { job, season, page } = fields
+  if (job === Job.Beginner || job === Job.UNKNOWN) {
+    throw new Error("Job must not be Beginner!")
+  }
+
+  return fetchMS2FormattedList({
+    fetchOptions: {
+      postfix: darkStreamPostfix,
+      urlSearchParams: {
+        s: String(season),
+        j: String(JobCode[job]),
+        page: String(page),
+      },
+    },
+    listSelector: ".rank_list_dark > .board tbody tr",
+  }, ($) => {
+
+    const profileURL = $.find(".character > img").attr("src") ?? ""
+
+    return {
+      rank: getRankFromElement($),
+      job: job as Job,
+      characterId: queryCIDFromImageURL(profileURL),
+      profileURL,
+      nickname: $.find(".character").text().trim(),
+      rankYMD: parseYMDString(
+        $.find(".time").text()
+      ),
+      score: parseCommaNumber(
+        $.find(".last_child").text()
+      ),
+    }
+  })
+
+
 }

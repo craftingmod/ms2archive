@@ -4,9 +4,10 @@ import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleI
 import type { ArchiveStorage, EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { sleep } from "bun";
-import { Job } from "../base/MS2Job.ts";
 import { RankStorage } from "../storage/RankStorage.ts";
 import { fetchGuildRankList, fetchTrophyRankList } from "../legacy/ms2fetch.ts";
+import { Job, JobCode } from "../legacy/struct/MS2CharInfo.ts";
+import { fetchDarkStreamRankList } from "../legacy/fetch/MS2RankFetch.ts";
 
 const debug = Debug("ms2archive:Archiver")
 
@@ -15,6 +16,53 @@ export class Archiver {
   public rankStorage = new RankStorage()
 
   public constructor(protected storage: ArchiveStorage) {
+
+  }
+
+  public async archiveDarkStream() {
+    for (let season = 1; season <= 247; season += 1) {
+      // season 247 = season 0
+      for (let job = 1; job < Job.Beginner; job += 1) {
+        await this.archiveDarkStreamPart(season, job)
+      }
+    }
+  }
+
+  protected async archiveDarkStreamPart(season: number, job: Job) {
+    debug(`Fetching Dark Stream (Season ${season}, Job ${job})`)
+
+    const highest = this.rankStorage.database.prepare(
+      `SELECT MAX(rank) FROM darkStreamStore WHERE season = ? AND job = ?;`
+    ).get(season, job) as { ["MAX(rank)"]: bigint | undefined }
+
+    const localHighRank = Number(highest["MAX(rank)"] ?? 0n)
+
+    const startPage = Math.max(1, Math.floor(localHighRank / 10))
+
+    for (let page = startPage; true; page += 1) {
+      const fetchedList = await fetchDarkStreamRankList({
+        job,
+        season,
+        page,
+      })
+
+      const insertList = fetchedList.filter(
+        (info) => info.rank > localHighRank
+      ).map(
+        (info) => ({
+          season,
+          ...info,
+          job: JobCode[info.job],
+        })
+      )
+
+      this.rankStorage.darkStreamStore.insertMany(insertList)
+
+      // 10개 미만이면 끝
+      if (fetchedList.length < 10) {
+        break
+      }
+    }
 
   }
 
@@ -75,7 +123,7 @@ export class Archiver {
     const localMinTrophyRankNum = Number(localMinTrophyRankData["MAX(trophyRank)"] ?? 0)
     const localMinTrophyRank = Math.max(Math.floor((localMinTrophyRankNum / 10)), 1)
 
-    const remoteHighestRankPage = 30000
+    const remoteHighestRankPage = 200000
 
     for (let page = localMinTrophyRank; page <= remoteHighestRankPage; page += 1) {
 

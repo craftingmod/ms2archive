@@ -36,6 +36,7 @@ export const guildTrophyPostfix = `Rank/Guild`
 export const worldChatPostfix = `Now/GetMessage`
 export const gatchaPostfix = `Probability/StoreView`
 export const guestbookPostfix = `Guestbook`
+export const darkStreamPostfix = `Rank/DarkStream`
 // ======================
 
 const profileURLPrefix = `https://ua-maplestory2.nexon.com/`
@@ -418,4 +419,52 @@ export function shrinkProfileURL(url: string) {
   } else {
     return url
   }
+}
+
+/**
+ * Parse `2020년 01월 01일` to `20200101`
+ * @param ymdString yyyymmdd string
+ * @returns `yyyymmdd` integer 
+ */
+export function parseYMDString(ymdString: string) {
+  if (ymdString.length <= 0) {
+    return 0
+  }
+  ymdString = ymdString.trim()
+
+  const getValueInt = (regexpMatch: RegExpMatchArray | null) => {
+    if (regexpMatch == null) {
+      return 0
+    }
+    const str = regexpMatch[0]
+    return Number.parseInt(str.substring(0, str.length - 1))
+  }
+
+  const year = getValueInt(
+    ymdString.match(/\d{4}년/i)
+  )
+
+  const month = getValueInt(
+    ymdString.match(/\d{1,2}월/i)
+  )
+
+  const day = getValueInt(
+    ymdString.match(/\d{1,2}일/i)
+  )
+
+  return year * 10000 + month * 100 + day
+}
+
+/**
+ * Parse `12,345,678` to `12345678`
+ * @param commaNumber comma number
+ * @returns integer
+ */
+export function parseCommaNumber(commaNumber: string) {
+  if (commaNumber.length <= 0) {
+    return 0
+  }
+  commaNumber = commaNumber.trim()
+  
+  return Number.parseInt(commaNumber.replaceAll(",", ""))
 }

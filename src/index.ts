@@ -18,4 +18,4 @@ const fixer = new Fixer(storage)
 // await archiver.archiveThumbList(BoardCategory.Cashshop)
 // await fixer.addShopSummary(BoardCategory.Cashshop)
 
-await archiver.archiveTrophyRank()
+await archiver.archiveDarkStream()

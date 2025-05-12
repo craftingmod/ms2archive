@@ -76,6 +76,22 @@ export const JobNameMapEn: { [key in Job]: string } = [
   "beginner",
 ]
 
+export const JobCode: { [key in Job]: number } = {
+  [Job.UNKNOWN]: -1,
+  [Job.Archer]: 50,
+  [Job.Assassin]: 80,
+  [Job.Berserker]: 20,
+  [Job.HeavyGunner]: 60,
+  [Job.Knight]: 10,
+  [Job.Priest]: 40,
+  [Job.RuneBlader]: 90,
+  [Job.SoulBinder]: 110,
+  [Job.Striker]: 100,
+  [Job.Thief]: 70,
+  [Job.Wizard]: 30,
+  [Job.Beginner]: 1,
+}
+
 /**
  * 크리티컬 계수
  */

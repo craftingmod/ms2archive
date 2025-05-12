@@ -1,11 +1,11 @@
-import { DungeonId } from "./dungeonid.js"
+import { DungeonId } from "./struct/MS2DungeonId.js"
 import { SequelizeLite } from "./sqliteorm/SequelizeLite.js"
 import { type CharacterStoreInfo, defineCharacterInfo } from "./database/CharacterInfo.js"
 import { defineNicknameInfo, type NicknameInfo } from "./database/NicknameInfo.js"
 import { defineClearInfo } from "./database/ClearInfo.js"
-import { Job } from "./ms2CharInfo.js"
-import type { CharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "./ms2CharInfo.js"
-import { shirinkProfileURL } from "./ms2fetch.js"
+import { Job } from "./struct/MS2CharInfo.js"
+import type { CharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "./struct/MS2CharInfo.js"
+import { shrinkProfileURL } from "./ms2fetch.js"
 import { addDays, isFuture } from "date-fns"
 
 export class MS2Database extends SequelizeLite {
@@ -214,7 +214,7 @@ export class MS2Database extends SequelizeLite {
       accountId: mainCharInfo?.accountId ?? 0n,
       starHouseDate: mainCharInfo?.houseDate ?? null,
       houseName: mainCharInfo?.houseName ?? null,
-      profileURL: shirinkProfileURL(characterInfo.profileURL),
+      profileURL: shrinkProfileURL(characterInfo.profileURL),
     }
     if ("trophyCount" in characterInfo) {
       totalInfo.trophy = characterInfo.trophyCount

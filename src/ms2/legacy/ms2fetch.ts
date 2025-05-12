@@ -4,19 +4,21 @@ import got from "got"
 import type { Cheerio, CheerioAPI } from "cheerio"
 import { load as loadDOM } from "cheerio"
 import chalk from "chalk"
-import { DungeonId } from "./dungeonid.js"
+import { DungeonId } from "./struct/MS2DungeonId.js"
 import type { PartyInfo } from "./partyinfo.js"
-import { DungeonNotFoundError, InternalServerError, InvalidParameterError, WrongPageError } from "./fetcherror.js"
+import { DungeonNotFoundError, InvalidParameterError } from "./fetcherror.js"
+import { InternalServerError } from "./fetch/FetchError.ts"
 import { sleep } from "./util.js"
 import { Agent as HttpAgent } from "http"
 import { Agent as HttpsAgent } from "https"
 import Debug from "debug"
 import { WorldChatType } from "./database/WorldChatInfo.js"
-import { Job } from "./ms2CharInfo.js"
-import type { CharacterInfo, CharacterMemberInfo, DungeonClearedCharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "./ms2CharInfo.js"
+import { Job } from "./struct/MS2CharInfo.js"
+import type { CharacterInfo, CharacterMemberInfo, DungeonClearedCharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "./struct/MS2CharInfo.js"
 import { addMonths, isAfter, isBefore, startOfMonth, subMonths } from "date-fns"
 import { type MS2CapsuleItem, MS2ItemTier, MS2Tradable } from "./ms2gatcha.js"
 import type { RawGuestBookInfo } from "./database/GuestBookInfo.js"
+import { bossClearedWithMemberPostfix, getRankFromElement, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, validateTableTitle } from "./util/MS2FetchUtil.ts"
 
 const verbose = Debug("ms2:verbose:fetch")
 const debug = Debug("ms2:verbose:debug")
@@ -45,15 +47,7 @@ export const profilePrefixLong = `${profilePrefix}profile/`
 const jobIconPrefix = `https://ssl.nexon.com/S2/Game/maplestory2/MAVIEW/ranking/`
 let lastRespTime = 0
 
-const mainURL = `https://${ms2Domain}/Main/Index`
-const bossDateURL = `https://${ms2Domain}/Rank/Boss1`
-const bossRateURL = `https://${ms2Domain}/Rank/Boss3`
-const bossMemberURL = `https://${ms2Domain}/Rank/Boss1Party`
-export const trophyURL = `https://${ms2Domain}/Rank/Character`
-const mainCharacterURL = `https://${ms2Domain}/Rank/Architect`
-const guildTrophyURL = `https://${ms2Domain}/Rank/Guild`
-const worldChatURL = `https://${ms2Domain}/Now/GetMessage`
-const gatchaURL = `https://${ms2Domain}/Probability/StoreView`
+
 
 export const FALLBACK_PROFILE = `https://cdn.discordapp.com/attachments/895664006637965383/1045635182524383312/ico_default.png` // Fallback.
 export const MIN_QUERY_DATE = new Date(2015, 7, 1) // 2015/8/1
@@ -120,7 +114,7 @@ export async function fetchClearedByDate(id: DungeonId, page: number, detail = t
     // Members
     const members: Array<CharacterMemberInfo> = []
     if (partyId.length >= 1 && detail) {
-      const { body: fetchMembers } = await requestGet(bossMemberURL, {
+      const { body: fetchMembers } = await requestGet(bossClearedWithMemberPostfix, {
         "User-Agent": userAgent,
         "Referer": bossDateURL,
       }, {
@@ -525,6 +519,7 @@ export async function fetchGuildRank(guildname: string, queryUser: boolean = fal
   if ($(".no_data").length >= 1) {
     return null
   }
+
   // make
   const $el = $(".rank_list_guild > .board tbody tr")
 
@@ -561,6 +556,50 @@ export interface GuildRank {
   leaderName: string,
   leaderInfo: CharacterInfo & { profileURL: string } | null,
   trophyCount: number,
+}
+
+export async function fetchTrophyRankList(page = 1) {
+  const { body, statusCode } = await requestGet(trophyURL, {
+    "User-Agent": userAgent,
+    "Referer": trophyURL,
+  }, {
+    tp: "realtime",
+    page: String(page),
+  })
+  if (statusCode === 403) {
+    return null
+  }
+  const $ = loadDOM(body)
+  // check response is ok
+  validateTableTitle($, "개인 트로피")
+  // check no person
+  if ($(".no_data").length >= 1) {
+    return null
+  }
+  // make
+  const resultList = $(".rank_list_character > .board tbody tr").map((i, el) => {
+    const $i = $(el)
+    // rank
+    const rank = getRankFromElement($i)
+    // parse character info
+    const characterId = queryCIDFromImageURL($i.find(".character > img:nth-child(1)").attr("src") ?? "")
+    // nickname
+    const nickname = $i.find(".character").text().trim()
+    // profile image
+    const profileURL = $i.find(".character > img").attr("src") ?? ""
+    const result: TrophyCharacterInfo = {
+      characterId,
+      job: Job.UNKNOWN,
+      nickname,
+      level: -1,
+      trophyCount: Number.parseInt($i.find(".last_child").text().replace(",", "")),
+      trophyRank: rank,
+      profileURL,
+    }
+    return result
+  }).toArray()
+
+  return resultList
 }
 
 /**
@@ -834,150 +873,4 @@ async function requestGet(url: string, headers: Record<string, string>, params: 
   }
   // unreachable
   return { body: "", statusCode: 0 }
-}
-
-/**
- * Extract CharacterId from character profile image url
- * @param imageURL Image URL
- */
-function queryCIDFromImageURL(imageURL: string): bigint {
-  if (imageURL.length > 0 && imageURL.startsWith(profilePrefix)) {
-    let cid = 0n
-    const queryURL = imageURL.substring(profilePrefix.length)
-    const query = queryURL.split("/")
-    for (let i = 0; i < query.length; i++) {
-      if (i === 3) {
-        cid = BigInt(query[i] ?? "0")
-        break
-      }
-    }
-    return cid
-  } else {
-    return 0n
-  }
-}
-
-export function constructTrophyURL(nickname: string) {
-  return `${trophyURL}?tp=realtime&k=${nickname}`
-}
-
-export function constructHouseRankURL(nickname: string, time: number) {
-  const year = Math.floor(time / 100)
-  const month = time % 100
-  return `${mainCharacterURL}?tp=monthly&d=${year}-${month.toString().padStart(2, "0")}-01&k=${nickname}`
-}
-
-/**
- * Extract Job from character job icon url
- * @param iconURL Icon URL
- */
-function queryJobFromIcon(iconURL: string) {
-  if (iconURL.startsWith(jobIconPrefix)) {
-    let postfix = iconURL.substring(jobIconPrefix.length)
-    postfix = postfix.substring(4)
-    postfix = postfix.substring(0, postfix.indexOf(".png")).toLowerCase()
-    switch (postfix) {
-      case "archer":
-        return Job.Archer
-      case "assassin":
-        return Job.Assassin
-      case "berserker":
-        return Job.Berserker
-      case "heavygunner":
-        return Job.HeavyGunner
-      case "knight":
-        return Job.Knight
-      case "priest":
-        return Job.Priest
-      case "runeblader":
-        return Job.RuneBlader
-      case "soulbinder":
-        return Job.SoulBinder
-      case "striker":
-        return Job.Striker
-      case "thief":
-        return Job.Thief
-      case "wizard":
-        return Job.Wizard
-      case "beginner":
-        return Job.Beginner
-      default:
-        return Job.Beginner
-    }
-  } else {
-    return Job.Beginner
-  }
-}
-/**
- * Query Level from Lv.xx
- * @param lvtext Lv.xx
- */
-function queryLevelFromText(lvtext: string) {
-  if (lvtext.startsWith("Lv.") && lvtext.length >= 4) {
-    return Number.parseInt(lvtext.substring(3))
-  } else {
-    return -1
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getRankFromElement($i: Cheerio<any>) {
-  const rankStr = $i.find(".first_child").text()
-  let rank = 0
-  if (rankStr.length <= 0) {
-    rank = Number.parseInt(($i.find(".first_child > img").attr("alt")?.match(/\d+/) ?? ["0"])[0] ?? "0")
-    if (Number.isNaN(rank)) {
-      rank = 0
-    }
-  } else {
-    rank = Number.parseInt(rankStr)
-  }
-  return rank
-}
-
-function getTierFromText(text: string) {
-  const textMap: { [key in string]?: MS2ItemTier } = {
-    "노멀": MS2ItemTier.NORMAL,
-    "레어": MS2ItemTier.RARE,
-    "엘리트": MS2ItemTier.EXCEPTIONAL,
-    "엑설런트": MS2ItemTier.EPIC,
-    "레전더리": MS2ItemTier.LEGENDARY,
-    "에픽": MS2ItemTier.ASCENDENT,
-  }
-  return textMap[text] ?? MS2ItemTier.NORMAL
-}
-
-function getTradableFromText(text: string) {
-  const textMap: { [key in string]?: MS2Tradable } = {
-    "거래가능": MS2Tradable.TRADEABLE,
-    "계정 귀속": MS2Tradable.ACCOUNT_BOUND,
-    "캐릭터 귀속": MS2Tradable.CHARACTER_BOUND,
-  }
-  return textMap[text] ?? MS2Tradable.ACCOUNT_BOUND
-}
-
-function validateTableTitle($: CheerioAPI, title: string) {
-  if ($(".table_info").length <= 0 || !$(".table_info").text().includes(title)) {
-    console.log("Title: " + $(".table_info").text())
-    throw new WrongPageError(`We cannot find ${title} title.`)
-  }
-}
-
-export function shirinkProfileURL(url: string) {
-  if (url.startsWith(profilePrefixLong)) {
-    return url.substring(profilePrefixLong.length)
-  } else {
-    return url
-  }
-}
-
-export function expandProfileURL(url: string | null) {
-  if (url == null || url === FALLBACK_PROFILE) {
-    return FALLBACK_PROFILE
-  }
-  if (url.startsWith(profilePrefix)) {
-    return url
-  } else {
-    return profilePrefixLong + url
-  }
 }

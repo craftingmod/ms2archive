@@ -1,12 +1,12 @@
-import { DungeonId, dungeonIdNameMap } from "./dungeonid.js"
-import type { CharacterInfo, CharacterMemberInfo, MainCharacterInfo, TrophyCharacterInfo } from "./ms2CharInfo.js"
-import { fetchClearedByDate, fetchClearedRate, fetchMainCharacterByName, fetchMainCharacterByNameDate, fetchTrophyCount, MIN_QUERY_DATE, searchLatestClearedPage, shirinkProfileURL } from "./ms2fetch.js"
+import { DungeonId, dungeonIdNameMap } from "./struct/MS2DungeonId.js"
+import type { CharacterInfo, CharacterMemberInfo, MainCharacterInfo, TrophyCharacterInfo } from "./struct/MS2CharInfo.js"
+import { fetchClearedByDate, fetchClearedRate, fetchMainCharacterByName, fetchMainCharacterByNameDate, fetchTrophyCount, MIN_QUERY_DATE, searchLatestClearedPage, shrinkProfileURL } from "./ms2fetch.js"
 import Debug from "debug"
 import chalk from "chalk"
 import { MS2Database } from "./ms2database.js"
 import { type ClearInfo, shirinkPartyId } from "./database/ClearInfo.js"
 import type { CharacterStoreInfo } from "./database/CharacterInfo.js"
-import { InternalServerError } from "./fetcherror.js"
+import { InternalServerError } from "./fetch/FetchError.ts"
 import { addMonths, isFuture, subMonths } from "date-fns"
 
 const debug = Debug("ms2:debug:analyzer")
@@ -273,7 +273,7 @@ export class MS2Analyzer {
             houseQueryDate: this.toYYYYMM(prevDate),
             starHouseDate: null,
             houseName: null,
-            profileURL: shirinkProfileURL(lostCharacter.profileURL),
+            profileURL: shrinkProfileURL(lostCharacter.profileURL),
             lastUpdatedTime: new Date(nowTime),
           })
         } else {
@@ -281,7 +281,7 @@ export class MS2Analyzer {
           // 트로피 검색이 안되므로 닉네임이 바뀌었든 뭐든 유효하진 않음
           // 삭제된 캐릭터로 마킹 (닉네임은 실시간이니까 1은 아님)
           this.ms2db.modifyCharacterInfo(BigInt(lostCharacter.characterId), {
-            profileURL: shirinkProfileURL(lostCharacter.profileURL),
+            profileURL: shrinkProfileURL(lostCharacter.profileURL),
             isNicknameObsoleted: 2,
             lastUpdatedTime: new Date(nowTime),
           })
@@ -394,7 +394,7 @@ export class MS2Analyzer {
           level: convertLevel(dbTargetCharacter.level),
           trophy: charInfo.trophyCount,
           isNicknameObsoleted: 0,
-          profileURL: shirinkProfileURL(charInfo.profileURL),
+          profileURL: shrinkProfileURL(charInfo.profileURL),
           lastUpdatedTime: new Date(Date.now()),
         })
         // 패스
@@ -479,7 +479,7 @@ export class MS2Analyzer {
           houseQueryDate: this.toYYYYMM(prevDate),
           starHouseDate: mainCharacterInfo.houseDate,
           houseName: mainCharacterInfo.houseName,
-          profileURL: shirinkProfileURL(mainCharacterInfo.profileURL),
+          profileURL: shrinkProfileURL(mainCharacterInfo.profileURL),
           lastUpdatedTime: new Date(Date.now()),
         })
       }
@@ -509,7 +509,7 @@ export class MS2Analyzer {
         houseQueryDate: this.toYYYYMM(prevDate),
         starHouseDate: mainCharacterInfo?.houseDate ?? null,
         houseName: mainCharacterInfo?.houseName ?? null,
-        profileURL: shirinkProfileURL(charInfo.profileURL),
+        profileURL: shrinkProfileURL(charInfo.profileURL),
         lastUpdatedTime: new Date(Date.now()),
       })
     } else {
@@ -528,7 +528,7 @@ export class MS2Analyzer {
             starHouseDate: mainCharacterInfo.houseDate,
             houseQueryDate: this.toYYYYMM(prevDate),
             isNicknameObsoleted: 0,
-            profileURL: shirinkProfileURL(charInfo.profileURL),
+            profileURL: shrinkProfileURL(charInfo.profileURL),
             lastUpdatedTime: new Date(Date.now()),
           })
         } else {
@@ -539,7 +539,7 @@ export class MS2Analyzer {
             level: convertLevel(dbTargetCharacter.level),
             trophy: charInfo.trophyCount,
             isNicknameObsoleted: 0,
-            profileURL: shirinkProfileURL(charInfo.profileURL),
+            profileURL: shrinkProfileURL(charInfo.profileURL),
             lastUpdatedTime: new Date(Date.now()),
           })
         }
@@ -552,7 +552,7 @@ export class MS2Analyzer {
           trophy: charInfo.trophyCount,
           houseQueryDate: this.toYYYYMM(prevDate),
           isNicknameObsoleted: 0,
-          profileURL: shirinkProfileURL(charInfo.profileURL),
+          profileURL: shrinkProfileURL(charInfo.profileURL),
           lastUpdatedTime: new Date(Date.now()),
         })
       }

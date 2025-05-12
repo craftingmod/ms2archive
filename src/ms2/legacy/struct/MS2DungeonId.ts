@@ -1,3 +1,5 @@
+export type MS2DungeonId = DungeonId
+
 export enum DungeonId {
   UNKNOWN = 0,
 

@@ -6,8 +6,7 @@ import Debug from "debug"
 import { sleep } from "bun";
 import { Job } from "../base/MS2Job.ts";
 import { RankStorage } from "../storage/RankStorage.ts";
-import { fetchGuildRankList, searchLatestPage } from "../legacy/ms2fetch.ts";
-import type { GuildRankStoreInfo } from "../legacy/database/GuildRankInfo.ts";
+import { fetchGuildRankList, fetchTrophyRankList } from "../legacy/ms2fetch.ts";
 
 const debug = Debug("ms2archive:Archiver")
 
@@ -36,8 +35,6 @@ export class Archiver {
     // Atomic value
     const remoteHighestRankPage = 13487
 
-    const rankBuffer = [] as GuildRankStoreInfo[]
-
     for (let page = localHighestPage; page <= remoteHighestRankPage; page += 1) {
       const guildRankList = await fetchGuildRankList(page)
       if (guildRankList == null) {
@@ -53,8 +50,9 @@ export class Archiver {
       }/${
         chalk.green(remoteHighestRankPage)
       } pages`)
-      rankBuffer.push(
-        ...guildRankListFiltered.map(
+
+      this.rankStorage.guildRankStore.insertMany(
+        guildRankListFiltered.map(
           (rank) => ({
             guildId: rank.guildId,
             guildName: rank.guildName,
@@ -66,15 +64,44 @@ export class Archiver {
           })
         )
       )
-
-      if (page % 100 === 0) {
-        // flush rankBuffer
-        this.rankStorage.guildRankStore.insertMany(rankBuffer)
-        rankBuffer.splice(0, rankBuffer.length)
-      }
     }
-    // flush rankBuffer
-    this.rankStorage.guildRankStore.insertMany(rankBuffer)
+  }
+
+  public async archiveTrophyRank() {
+    const localMinTrophyRankData = (this.rankStorage.database.prepare(
+      `SELECT MAX(trophyRank) FROM trophyRankStore;`
+    ).get()) as { ["MAX(trophyRank)"]: bigint | undefined }
+
+    const localMinTrophyRankNum = Number(localMinTrophyRankData["MAX(trophyRank)"] ?? 0)
+    const localMinTrophyRank = Math.max(Math.floor((localMinTrophyRankNum / 10)), 1)
+
+    const remoteHighestRankPage = 30000
+
+    for (let page = localMinTrophyRank; page <= remoteHighestRankPage; page += 1) {
+
+      const trophyRankList = await fetchTrophyRankList(page)
+      if (trophyRankList == null) {
+        continue
+      }
+
+      debug(`Archiving Trophy ranks: ${
+        chalk.yellow(page)
+      }/${
+        chalk.green(remoteHighestRankPage)
+      } pages`)
+
+      this.rankStorage.trophyRankStore.insertMany(
+        trophyRankList.map(
+          (rank) => ({
+            characterId: rank.characterId,
+            nickname: rank.nickname,
+            trophyCount: rank.trophyCount,
+            trophyRank: rank.trophyRank,
+            profileURL: rank.profileURL,
+          })
+        )
+      )
+    }
   }
 
   /**

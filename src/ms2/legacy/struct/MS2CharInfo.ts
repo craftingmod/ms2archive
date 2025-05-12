@@ -1,3 +1,5 @@
+import type { BossPartyLeaderInfo } from "./MS2RankInfo"
+
 /**
  * 직업 목록 (A-Z 정렬 후에 초보자 추가)
  */
@@ -56,6 +58,25 @@ export const JobNameMap: { [key in Job]: JobName } = [
 ]
 
 /**
+ * 직업 -> 직업 이름 (영어로)
+ */
+export const JobNameMapEn: { [key in Job]: string } = [
+  "fallback",
+  "archer",
+  "assassin",
+  "berserker",
+  "heavygunner",
+  "knight",
+  "priest",
+  "runeblader",
+  "soulbinder",
+  "striker",
+  "thief",
+  "wizard",
+  "beginner",
+]
+
+/**
  * 크리티컬 계수
  */
 export const CritCoef: { [key in Job]: number } = [
@@ -75,21 +96,9 @@ export const CritCoef: { [key in Job]: number } = [
 ]
 
 /**
- * 던전 파티원 멤버에서 나오는 캐릭터 정보
+ * 기준으로 삼는 캐릭터 정보
  */
-export interface CharacterMemberInfo {
-  job: Job
-  nickname: string
-  level: number
-}
-
-/**
- * 던전 리더에서 나오는 정보
- */
-export interface CharacterInfo extends CharacterMemberInfo {
-  characterId: bigint
-  profileURL: string
-}
+export type CharacterInfo = BossPartyLeaderInfo
 
 /**
  * 트로피 검색에서 나오는 정보
@@ -98,6 +107,7 @@ export interface TrophyCharacterInfo extends CharacterInfo {
   trophyRank: number
   trophyCount: number
 }
+
 /**
  * 던전 클리어 순위에서 나오는 정보
  */
@@ -116,6 +126,18 @@ export interface MainCharacterInfo extends CharacterInfo {
   houseScore: number
   houseRank: number
   houseDate: number // yyyymm
+}
+
+/**
+ * 숫자(인덱싱 같은 거)를 직업으로 변환
+ * @param num number
+ * @returns 직업
+ */
+export function numberToJob(num: number) {
+  if (Math.floor(num) !== num || num < Job.UNKNOWN || num > Job.Beginner) {
+    return Job.UNKNOWN
+  }
+  return num as Job
 }
 
 /*

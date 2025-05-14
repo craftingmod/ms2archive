@@ -1,69 +1,123 @@
 import chalk from "chalk"
 import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts";
 import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, UnknownTime, writeImages, type ArticleHeader, type MS2Article } from "../fetch/ArticleFetch.ts";
-import type { ArchiveStorage, EventComment } from "../storage/ArchiveStorage.ts"
+import type { EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { sleep } from "bun";
-import { RankStorage } from "../storage/RankStorage.ts";
 import { fetchGuildRankList, fetchTrophyRankList } from "../legacy/ms2fetch.ts";
 import { Job, JobCode } from "../legacy/struct/MS2CharInfo.ts";
-import { fetchDarkStreamRankList } from "../legacy/fetch/MS2RankFetch.ts";
+import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../legacy/fetch/MS2RankFetch.ts";
+import { BaseArchiver } from "./BaseArchiver.ts";
 
 const debug = Debug("ms2archive:Archiver")
 
-export class Archiver {
+export class Archiver extends BaseArchiver {
 
-  public rankStorage = new RankStorage()
+  public async archiveArchitect() {
+    for (let years = 2015; years <= 2025; years += 1) {
+      for (let months = 1; months <= 12; months += 1) {
+        if (years === 2015 && months <= 7) {
+          continue
+        }
+        if (years === 2025 && months >= 6) {
+          continue
+        }
 
-  public constructor(protected storage: ArchiveStorage) {
+        await this.archiveRankData({
+          name: "Architect",
+          store: this.rankStorage.architectStore,
+          seasonCondition: {
+            starDate: (years * 100 + months),
+          },
+          minPageSize: 1,
+          fetchFn: (page) => fetchArchitectRankList({
+            year: years,
+            month: months,
+          }, page),
+        })
+      }
+    }
+  }
 
+  /**
+   * 길드 챔피언십 랭킹을 아카이빙합니다.
+   */
+  public async archiveGuildPvP() {
+    for (let season = 1; season <= 8; season += 1) {
+      await this.archiveRankData({
+        name: "Guild PvP",
+        store: this.rankStorage.guildPvPStore,
+        seasonCondition: {
+          season,
+        },
+        fetchFn: (page) => fetchGuildPvPRankList(season, page),
+      })
+    }
+  }
+
+  /**
+   * 메이플 투기장 랭킹을 아카이빙합니다.
+   */
+  public async archivePvP() {
+    for (let season = 1; season <= 111; season += 1) {
+      const parse1000 = season > 17
+
+      await this.archiveRankData({
+        name: "PvP",
+        store: this.rankStorage.pvpStore,
+        seasonCondition: {
+          season,
+        },
+        fetchFn: (page) => fetchPvPRankList(season, page),
+        filterFn: (info) => parse1000 || info.score > 1000,
+        breakFn: (data) => !parse1000 && data.score <= 1000,
+      })
+    }
+  }
+
+  /**
+   * 메이플 투기장 랭킹 17만을 아카이빙합니다.
+   */
+  public async archivePvPS17() {
+    await this.archiveRankData({
+      name: "PvP Season17",
+      store: this.rankStorage.pvpRawStore,
+      seasonCondition: {
+        season: 17,
+      },
+      fetchFn: (page) => fetchPvPRankList(17, page),
+    })
+  }
+
+  public async checkLastPvPPages() {
+    for (let season = 15; season <= 112; season += 1) {
+      const lastPage = await fetchPvPLastPage(season, 1)
+      debug(`Season ${season} : ${lastPage}`)
+    }
   }
 
   public async archiveDarkStream() {
     for (let season = 1; season <= 247; season += 1) {
       // season 247 = season 0
       for (let job = 1; job < Job.Beginner; job += 1) {
-        await this.archiveDarkStreamPart(season, job)
-      }
-    }
-  }
-
-  protected async archiveDarkStreamPart(season: number, job: Job) {
-    debug(`Fetching Dark Stream (Season ${season}, Job ${job})`)
-
-    const highest = this.rankStorage.database.prepare(
-      `SELECT MAX(rank) FROM darkStreamStore WHERE season = ? AND job = ?;`
-    ).get(season, job) as { ["MAX(rank)"]: bigint | undefined }
-
-    const localHighRank = Number(highest["MAX(rank)"] ?? 0n)
-
-    const startPage = Math.max(1, Math.floor(localHighRank / 10))
-
-    for (let page = startPage; true; page += 1) {
-      const fetchedList = await fetchDarkStreamRankList({
-        job,
-        season,
-        page,
-      })
-
-      const insertList = fetchedList.filter(
-        (info) => info.rank > localHighRank
-      ).map(
-        (info) => ({
-          season,
-          ...info,
-          job: JobCode[info.job],
+        await this.archiveRankData({
+          name: "Dark Stream",
+          store: this.rankStorage.darkStreamStore,
+          seasonCondition: {
+            season,
+            job: JobCode[job as Job],
+          },
+          fetchFn: async (page) => (await fetchDarkStreamRankList({
+            job,
+            season,
+            page,
+          })).map((data) => ({
+            ...data,
+            job: JobCode[data.job]
+          })),
         })
-      )
-
-      this.rankStorage.darkStreamStore.insertMany(insertList)
-
-      // 10개 미만이면 끝
-      if (fetchedList.length < 10) {
-        break
       }
     }
-
   }
 
   public async archiveGuildRank() {
@@ -73,7 +127,7 @@ export class Archiver {
 
     const localHighestRank = Number(localHighestRankData["MAX(rank)"] ?? 0)
     const localHighestPage = Math.max(Math.floor((localHighestRank / 10)), 1)
-    
+
     /*
     const remoteHighestRankPage = await searchLatestPage(
       (page) => fetchGuildRankList(page),
@@ -91,13 +145,11 @@ export class Archiver {
       const guildRankListFiltered = (page === localHighestPage) ? guildRankList.filter(
         (rank) => rank.rank <= localHighestRank
       ) : guildRankList
-      
 
-      debug(`Archiving Guild ranks: ${
-        chalk.yellow(page)
-      }/${
-        chalk.green(remoteHighestRankPage)
-      } pages`)
+
+      debug(`Archiving Guild ranks: ${chalk.yellow(page)
+        }/${chalk.green(remoteHighestRankPage)
+        } pages`)
 
       this.rankStorage.guildRankStore.insertMany(
         guildRankListFiltered.map(
@@ -132,11 +184,9 @@ export class Archiver {
         continue
       }
 
-      debug(`Archiving Trophy ranks: ${
-        chalk.yellow(page)
-      }/${
-        chalk.green(remoteHighestRankPage)
-      } pages`)
+      debug(`Archiving Trophy ranks: ${chalk.yellow(page)
+        }/${chalk.green(remoteHighestRankPage)
+        } pages`)
 
       this.rankStorage.trophyRankStore.insertMany(
         trophyRankList.map(
@@ -265,7 +315,7 @@ export class Archiver {
 
   public async archiveEvents() {
     // 1. 매거진 리스트 뽑기
-    const events: Array<ArticleHeader & {hasId: boolean}> = []
+    const events: Array<ArticleHeader & { hasId: boolean }> = []
     for (let page = 1; true; page += 1) {
       const fetchedArticles = await fetchArticleList(BoardCategory.Events, page)
       if (fetchedArticles == null) {

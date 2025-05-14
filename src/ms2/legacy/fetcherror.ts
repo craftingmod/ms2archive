@@ -4,12 +4,3 @@ export class DungeonNotFoundError extends Error {
     this.name = "NotFoundError"
   }
 }
-
-export class InvalidParameterError extends Error {
-  public paramName: string
-  constructor(message: string, paramName: string) {
-    super(message)
-    this.name = "InvalidParameterError"
-    this.paramName = paramName
-  }
-}

@@ -1,8 +1,10 @@
-import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, darkStreamPostfix, getRankFromElement, guildTrophyPostfix, parseCommaNumber, parseYMDString, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, searchLatestPage, trophyPostfix } from "../util/MS2FetchUtil.ts"
+import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, darkStreamPostfix, getRankFromElement, guildPvPPostfix, guildTrophyPostfix, ms2BrowserHeader, parseCommaNumber, parseYMDString, postfixToURL, pvpPostfix, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, searchLatestPage, starArchitectPostfix, trophyPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2FormattedList } from "./MS2BaseFetch.ts"
 import type { BossClearedRankInfo, BossPartyInfo, BossPartyLeaderInfo, BossPartyMemberInfo, TrophyRankInfo } from "../struct/MS2RankInfo.ts"
 import type { DungeonId } from "../struct/MS2DungeonId.ts"
 import { JobCode, Job } from "../struct/MS2CharInfo.ts"
+import { MS2PvPTier, MS2PvPTierKr } from "../struct/MS2PvPTier.ts"
+import { InvalidParameterError } from "./FetchError.ts"
 
 export interface GuildRank {
   rank: number,
@@ -267,11 +269,13 @@ export async function fetchDarkStreamRankList(fields: {
     throw new Error("Job must not be Beginner!")
   }
 
+  const fetchSeason = (season === 247) ? 0 : season
+
   return fetchMS2FormattedList({
     fetchOptions: {
       postfix: darkStreamPostfix,
       urlSearchParams: {
-        s: String(season),
+        s: String(fetchSeason),
         j: String(JobCode[job]),
         page: String(page),
       },
@@ -282,8 +286,9 @@ export async function fetchDarkStreamRankList(fields: {
     const profileURL = $.find(".character > img").attr("src") ?? ""
 
     return {
-      rank: getRankFromElement($),
+      season: fields.season,
       job: job as Job,
+      rank: getRankFromElement($),
       characterId: queryCIDFromImageURL(profileURL),
       profileURL,
       nickname: $.find(".character").text().trim(),
@@ -297,4 +302,181 @@ export async function fetchDarkStreamRankList(fields: {
   })
 
 
+}
+
+/**
+ * 메이플 투기장(PvP) 기록을 가져옵니다.
+ * @param season 시즌
+ * @param page 페이지
+ * @returns PvP 기록
+ */
+export async function fetchPvPRankList(
+  season: number,
+  page: number,
+) {
+  return fetchMS2FormattedList({
+    fetchOptions: {
+      postfix: pvpPostfix,
+      urlSearchParams: {
+        s: String(season),
+        page: String(page),
+      },
+    },
+    listSelector: ".rank_list_pvp > .board tbody tr",
+  }, ($) => {
+
+    const profileURL = $.find(".character > img").attr("src") ?? ""
+
+    const rankWritten = $.find(".grade").text().trim()
+
+    const pvpTier = MS2PvPTierKr[rankWritten] ?? MS2PvPTier.Bronze
+
+    return {
+      season,
+      rank: getRankFromElement($),
+      characterId: queryCIDFromImageURL(profileURL),
+      profileURL,
+      nickname: $.find(".character").text().trim(),
+      tier: pvpTier,
+      score: parseCommaNumber(
+        $.find(".last_child").text()
+      ),
+    }
+  })
+}
+
+/**
+ * 메이플 투기장(PvP) 마지막 페이지를 가져옵니다.
+ * @param season 시즌
+ * @param startPage 검색 시작 페이지
+ * @returns 마지막 페이지
+ */
+export async function fetchPvPLastPage(
+  season: number,
+  startPage = 1,
+) {
+  return searchLatestPage(
+    (page) => fetchPvPRankList(season, page),
+    startPage,
+  )
+}
+
+/**
+ * 길드 챔피언십 랭킹을 가져옵니다.
+ * @param season 시즌 (0~7, 0은 마지막 시즌) 
+ * @param page 페이지
+ * @returns 
+ */
+export async function fetchGuildPvPRankList(
+  season: number,
+  page: number,
+) {
+  const fetchSeason = (season === 8) ? 0 : season
+
+  return fetchMS2FormattedList({
+    fetchOptions: {
+      postfix: guildPvPPostfix,
+      urlSearchParams: {
+        s: String(fetchSeason),
+        page: String(page),
+      },
+    },
+    listSelector: ".rank_list_guild > .board tbody tr",
+  }, ($) => {
+
+    const guildProfileURL = $.find(".character > img").attr("src") ?? ""
+
+    const rankWritten = $.find(".grade").text().trim()
+
+    const leaderName = $.find("td:nth-child(3)").text().trim()
+
+    const guildName = $.find(".character").text().trim()
+
+    const pvpTier = MS2PvPTierKr[rankWritten] ?? MS2PvPTier.Bronze
+
+    return {
+      season,
+      rank: getRankFromElement($),
+      guildId: queryCIDFromImageURL(guildProfileURL),
+      guildProfileURL,
+      guildName,
+      leaderName,
+      tier: pvpTier,
+      score: parseCommaNumber(
+        $.find(".last_child").text()
+      ),
+    }
+  })
+}
+
+/**
+ * 스타 건축가 랭킹을 가져옵니다.
+ */
+export async function fetchArchitectRankList(
+  date: { year: number, month: number },
+  page: number,
+  nickname = "",
+) {
+  if (date.year < 2015 || (date.year === 2015 && date.month <= 7)) {
+    throw new InvalidParameterError("Date의 범위는 2015년 8월 이후(포함)여야 합니다.", "date")
+  }
+  if (date.year > 2026 || (date.year === 2025 && date.month >= 6)) {
+    throw new InvalidParameterError("Date의 범위는 2025년 5월 이전(포함)이어야 합니다.", "date")
+  }
+  const isRealtime = date.year === 2025 && date.month === 5
+  const paddedMonth = String(date.month).padStart(2, "0")
+
+  return fetchMS2FormattedList({
+    fetchOptions: {
+      postfix: starArchitectPostfix,
+      urlSearchParams: {
+        tp: isRealtime ? "realtime" : "monthly",
+        d: isRealtime ? "" : `${date.year}-${paddedMonth}-01`,
+        k: nickname,
+        page: String(page),
+      },
+      headers: {
+        ...ms2BrowserHeader,
+        "Referer": postfixToURL(starArchitectPostfix),
+      },
+      userAgent: "MapleStory2",
+    },
+    listSelector: ".rank_list_interior > .board tbody tr",
+    validateTitle: "스타 건축가",
+  }, ($i) => {
+
+    // parse character info
+    const aidRawStr = $i.find(".left > a").attr("href") ?? ""
+    let aid: string = ""
+    if (aidRawStr.length >= 1) {
+      const rawarr = aidRawStr.substring(0, aidRawStr.length - 1).split(";").pop() ?? "ms2.moveToHouse(0)"
+      const queryarr = rawarr.substring(4).match(/\d+/)
+      if (queryarr != null) {
+        aid = queryarr[0] ?? ""
+      }
+    }
+    if (aid.length <= 0) {
+      throw new Error("AID must not be null!")
+    }
+
+    const imageURL = $i.find(".character > img:nth-child(1)").attr("src") ?? ""
+    const characterId = queryCIDFromImageURL(imageURL)
+    const characterName = $i.find(".character").text().trim()
+    const houseName = $i.find(".left > .addr").text().replace(/\s+/g, " ").trim()
+    const houseScoreRaw = $i.find(".last_child").text().replaceAll(",", "").trim()
+    const houseScore = Number.parseInt(houseScoreRaw)
+    const houseRank = getRankFromElement($i)
+
+    const result = {
+      starDate: date.year * 100 + date.month,
+      rank: houseRank,
+      characterId,
+      profileURL: imageURL,
+      nickname: characterName,
+      accountId: BigInt(aid),
+      houseName,
+      houseScore,
+    }
+    return result
+  })
 }

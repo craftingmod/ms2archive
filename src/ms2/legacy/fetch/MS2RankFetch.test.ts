@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { fetchBossClearedByDate, fetchBossClearedLastPage, fetchBossClearedRate, fetchDarkStreamRankList, fetchGuildRankList, fetchTrophyRankList } from "./MS2RankFetch.ts"
+import { fetchArchitectRankList, fetchBossClearedByDate, fetchBossClearedLastPage, fetchBossClearedRate, fetchDarkStreamRankList, fetchGuildRankList, fetchPvPRankList, fetchTrophyRankList } from "./MS2RankFetch.ts"
 import { DungeonId } from "../struct/MS2DungeonId.ts"
 import { Job } from "../struct/MS2CharInfo.ts"
 
@@ -57,4 +57,33 @@ test("다크 스트림 테스트2", async () => {
   console.log(darkStreamInfo)
 
   expect(darkStreamInfo).toBeArrayOfSize(0)
+})
+
+test("PvP 테스트", async () => {
+  const darkStreamInfo = (await fetchPvPRankList(1, 7))
+  console.log(darkStreamInfo)
+
+  expect(darkStreamInfo).toBeArrayOfSize(10)
+})
+
+test("스타 건축가 테스트1", async () => {
+  const architectInfo = await fetchArchitectRankList({
+    year: 2025,
+    month: 5,
+  }, 1)
+
+  console.log(architectInfo)
+
+  expect(architectInfo).toBeArrayOfSize(10)
+})
+
+test("스타 건축가 테스트2", async () => {
+  const architectInfo = await fetchArchitectRankList({
+    year: 2015,
+    month: 8,
+  }, 1)
+
+  console.log(architectInfo)
+
+  expect(architectInfo).toBeArrayOfSize(10)
 })

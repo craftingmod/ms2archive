@@ -5,7 +5,7 @@ import { defineNicknameInfo, type NicknameInfo } from "./database/NicknameInfo.j
 import { defineClearInfo } from "./database/ClearInfo.js"
 import { Job } from "./struct/MS2CharInfo.js"
 import type { CharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "./struct/MS2CharInfo.js"
-import { shrinkProfileURL } from "./ms2fetch.js"
+import { shrinkProfileURL } from "./util/MS2FetchUtil.js"
 import { addDays, isFuture } from "date-fns"
 
 export class MS2Database extends SequelizeLite {

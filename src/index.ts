@@ -18,4 +18,13 @@ const fixer = new Fixer(storage)
 // await archiver.archiveThumbList(BoardCategory.Cashshop)
 // await fixer.addShopSummary(BoardCategory.Cashshop)
 
-await archiver.archiveDarkStream()
+// await fixer.fixArchitectScore()
+
+// await archiver.archiveDarkStream()
+// await archiver.archiveGuildPvP()
+// await archiver.archiveArchitect()
+
+// await archiver.checkLastPvPPages()
+
+await archiver.archivePvPS17()
+await archiver.archivePvP()

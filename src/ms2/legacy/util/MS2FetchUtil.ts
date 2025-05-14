@@ -37,6 +37,8 @@ export const worldChatPostfix = `Now/GetMessage`
 export const gatchaPostfix = `Probability/StoreView`
 export const guestbookPostfix = `Guestbook`
 export const darkStreamPostfix = `Rank/DarkStream`
+export const pvpPostfix = `Rank/PVP`
+export const guildPvPPostfix = `Rank/GuildPVP`
 // ======================
 
 const profileURLPrefix = `https://ua-maplestory2.nexon.com/`

@@ -86,3 +86,12 @@ export class WrongPageError extends Error {
     this.name = "WrongPageError"
   }
 }
+
+export class InvalidParameterError extends Error {
+  public paramName: string
+  constructor(message: string, paramName: string) {
+    super(message)
+    this.name = "InvalidParameterError"
+    this.paramName = paramName
+  }
+}

@@ -27,6 +27,7 @@
     "got": "^14.4.7",
     "html-escaper": "^3.0.3",
     "is-file-animated": "^1.0.2",
+    "ms2packet.ts": "link:ms2packet.ts",
     "p-limit": "^6.2.0",
     "sharp": "^0.33.5",
     "turndown": "^7.2.0"

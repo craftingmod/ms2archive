@@ -1,0 +1,2852 @@
+[
+  {
+    "isOutbound": true,
+    "opcode": 0,
+    "name": "NULL",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 1,
+    "name": "ResponseVersion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 2,
+    "name": "Patch",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 3,
+    "name": "ResponseLogin",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 4,
+    "name": "ResponseKey",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 5,
+    "name": "Reconnect",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 6,
+    "name": "Pong",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 7,
+    "name": "ReconnectUnk",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 8,
+    "name": "FinalizeReconnect",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 9,
+    "name": "CharacterManagement",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 10,
+    "name": "ResponseHeartbeat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 11,
+    "name": "RequestTimeSync",
+    "ignoreLog": true
+  },
+  {
+    "isOutbound": true,
+    "opcode": 12,
+    "name": "ResponseClientTickSync",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 13,
+    "name": "RequestQuit",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 14,
+    "name": "DynamicBanword",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 15,
+    "name": "RequestLoadUgcMap",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 16,
+    "name": "ResponseFieldEnter",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 17,
+    "name": "UserChat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 18,
+    "name": "UserSync",
+    "ignoreLog": true
+  },
+  {
+    "isOutbound": true,
+    "opcode": 19,
+    "name": "Emotion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 20,
+    "name": "RequestServerList",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 21,
+    "name": "RequestItemCreate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 22,
+    "name": "ItemEquip",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 23,
+    "name": "RequestItemInventory",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 24,
+    "name": "RequestItemStorage",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 25,
+    "name": "RequestItemUse",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 26,
+    "name": "ItemExtraData",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 28,
+    "name": "RequestItemPickup",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 29,
+    "name": "RequestMesoPickup",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 30,
+    "name": "CharacterInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 31,
+    "name": "Revival",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 32,
+    "name": "Skill",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 33,
+    "name": "StateSkill",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 34,
+    "name": "NpcTalk",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 35,
+    "name": "Beauty",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 36,
+    "name": "RequestNpcCreate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 37,
+    "name": "Job",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 38,
+    "name": "Vibrate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 39,
+    "name": "Breakable",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 40,
+    "name": "Shop",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 41,
+    "name": "Quest",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 42,
+    "name": "Tombstone",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 43,
+    "name": "RoomDungeon",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 44,
+    "name": "Party",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 45,
+    "name": "Mail",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 46,
+    "name": "FunctionCube",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 47,
+    "name": "Trigger",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 48,
+    "name": "Buddy",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 49,
+    "name": "InteractObject",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 50,
+    "name": "InteractNpc",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 51,
+    "name": "StateConsumeEp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 52,
+    "name": "StateFallDamage",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 53,
+    "name": "GuideObjectSync",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 54,
+    "name": "RequestSetCraftMode",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 55,
+    "name": "RequestCube",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 56,
+    "name": "RequestApartment",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 57,
+    "name": "UGC",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 58,
+    "name": "MeretMarket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 59,
+    "name": "KeyTable",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 60,
+    "name": "Channel",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 61,
+    "name": "Liftable",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 62,
+    "name": "MyInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 63,
+    "name": "RelocateWorld",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 64,
+    "name": "ItemFusion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 65,
+    "name": "RequestRide",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 66,
+    "name": "RideSync",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 67,
+    "name": "FittingDoll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 68,
+    "name": "BonusGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 69,
+    "name": "ResolvePenalty",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 70,
+    "name": "TakeBoat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 71,
+    "name": "Achieve",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 72,
+    "name": "BadgeEquip",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 73,
+    "name": "RequestTaxi",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 74,
+    "name": "Trade",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 75,
+    "name": "RequestWorldmap",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 76,
+    "name": "Guild",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 77,
+    "name": "GroupChat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 78,
+    "name": "RequestHomeBank",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 79,
+    "name": "RequestHomeDoctor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 80,
+    "name": "AH",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 81,
+    "name": "SetDebugMode",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 82,
+    "name": "RequestHome",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 83,
+    "name": "RequestReport",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 84,
+    "name": "FurnishingStorage",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 85,
+    "name": "RequestMoveEventfield",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 86,
+    "name": "LogSend",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 87,
+    "name": "DpsMode",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 88,
+    "name": "GuideRecord",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 89,
+    "name": "Rank",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 90,
+    "name": "RequestSkipTutorial",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 91,
+    "name": "ItemDismantle",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 92,
+    "name": "RideConsumeEp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 93,
+    "name": "RequestAdditionalEffect",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 94,
+    "name": "RecallUser",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 95,
+    "name": "RequestItemEnchant",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 96,
+    "name": "BlackMarket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 97,
+    "name": "Gamble",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 98,
+    "name": "PVP",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 99,
+    "name": "Maid",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 100,
+    "name": "NewsNotification",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 101,
+    "name": "SmartRecommendBilling",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 102,
+    "name": "SystemShop",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 103,
+    "name": "DailyWonder",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 104,
+    "name": "PcBangBonus",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 105,
+    "name": "MaidCraftItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 106,
+    "name": "RequestUserEnv",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 107,
+    "name": "Cash",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 108,
+    "name": "Nametag",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 109,
+    "name": "RequestMoveField",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 110,
+    "name": "WaitingTicket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 111,
+    "name": "MatchParty",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 112,
+    "name": "RecallScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 113,
+    "name": "PotentialAbility",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 114,
+    "name": "EnchantScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 115,
+    "name": "GlobalPortal",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 116,
+    "name": "Fishing",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 117,
+    "name": "PlayInstrument",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 118,
+    "name": "ChangeAttributes",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 119,
+    "name": "ChangeAttributesScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 120,
+    "name": "TransferEnchant",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 121,
+    "name": "RequestPet",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 122,
+    "name": "RequestPetInventory",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 123,
+    "name": "NoticeDialog",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 124,
+    "name": "SkillMacro",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 125,
+    "name": "Banword",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 126,
+    "name": "CheckCharName",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 127,
+    "name": "PlatformProtectPacket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 128,
+    "name": "PlatformAccountSafe",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 129,
+    "name": "State",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 130,
+    "name": "MesoMarket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 131,
+    "name": "GlobalFactor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 132,
+    "name": "SmartPush",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 133,
+    "name": "PlayArcade",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 134,
+    "name": "EnterEventfield",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 135,
+    "name": "CardReverseGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 136,
+    "name": "RequestItemLock",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 137,
+    "name": "ItemSocketSystem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 138,
+    "name": "CharacterAbility",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 139,
+    "name": "Tutorial",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 140,
+    "name": "ItemSocketScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 141,
+    "name": "ItemRepack",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 142,
+    "name": "DiceGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 143,
+    "name": "PremiumClub",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 145,
+    "name": "HomeGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 147,
+    "name": "Mastery",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 148,
+    "name": "ConstructShop",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 150,
+    "name": "Club",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 151,
+    "name": "NexonArena",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 152,
+    "name": "EventReward",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 153,
+    "name": "NameChange",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 154,
+    "name": "AttributePoint",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 155,
+    "name": "ItemRepeat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 156,
+    "name": "ItemExchangeScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 157,
+    "name": "RequestTutorialItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 158,
+    "name": "DungeonReward",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 159,
+    "name": "ItemBillboard",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 160,
+    "name": "TreasureMap",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 161,
+    "name": "ItemExtractionScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 162,
+    "name": "Mentor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 163,
+    "name": "RequestSkillBookTree",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 164,
+    "name": "BuddyEmote",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 165,
+    "name": "BuddyBadge",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 166,
+    "name": "SyncWorld",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 167,
+    "name": "BirthdayCard",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 168,
+    "name": "SuperWorldChat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 169,
+    "name": "Microgame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 170,
+    "name": "StateReact",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 171,
+    "name": "TreeWatering",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 172,
+    "name": "Survival",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 173,
+    "name": "SpectateMushtopia",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 174,
+    "name": "Prestige",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 175,
+    "name": "Lapenshard",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 176,
+    "name": "UGD",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 177,
+    "name": "WorldChampion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 178,
+    "name": "ServerEnter",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 179,
+    "name": "MinimapPing",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 181,
+    "name": "MsgBox",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 182,
+    "name": "Wardrobe",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 183,
+    "name": "SystemInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 184,
+    "name": "SidePopup",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 185,
+    "name": "Messenger",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 186,
+    "name": "WebScreenshot",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 187,
+    "name": "FileHash",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 188,
+    "name": "Wedding",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 189,
+    "name": "WeddingBillboard",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": true,
+    "opcode": 190,
+    "name": "LimitBreak",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 0,
+    "name": "NULL",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 1,
+    "name": "RequestVersion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 2,
+    "name": "VersionResult",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 3,
+    "name": "ResponseLogin",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 4,
+    "name": "RequestKey",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 5,
+    "name": "Reconnect",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 6,
+    "name": "Ping",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 7,
+    "name": "ReconnectUnk",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 8,
+    "name": "FinalizeReconnect",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 9,
+    "name": "RequestLogin",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 10,
+    "name": "LoginResult",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 11,
+    "name": "ServerList",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 12,
+    "name": "CharacterList",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 13,
+    "name": "MoveResult",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 14,
+    "name": "LoginToGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 15,
+    "name": "GameToLogin",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 16,
+    "name": "GameToGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 17,
+    "name": "ResponseTimeSync",
+    "ignoreLog": true
+  },
+  {
+    "isOutbound": false,
+    "opcode": 18,
+    "name": "RequestHeartbeat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 19,
+    "name": "RequestClientTickSync",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 20,
+    "name": "SyncNumber",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 21,
+    "name": "ServerEnter",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 22,
+    "name": "RequestFieldEnter",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 23,
+    "name": "FieldAddUser",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 24,
+    "name": "FieldRemoveUser",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 25,
+    "name": "FieldEntrance",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 26,
+    "name": "RoomDungeon",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 27,
+    "name": "DungeonReward",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 28,
+    "name": "UserSync",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 29,
+    "name": "UserChat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 30,
+    "name": "MessengerBrowser",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 31,
+    "name": "Emotion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 32,
+    "name": "ItemPutOnOrOff",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 33,
+    "name": "ItemInventory",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 34,
+    "name": "StorageInventory",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 35,
+    "name": "FurnishingStorage",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 36,
+    "name": "FurnishingInventory",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 37,
+    "name": "ItemPutOn",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 38,
+    "name": "ItemPutOff",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 39,
+    "name": "ItemSkinPutOn",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 40,
+    "name": "ItemSkinPutOff",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 41,
+    "name": "ItemDrop",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 42,
+    "name": "ItemUpdate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 43,
+    "name": "FieldAddItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 44,
+    "name": "FieldRemoveItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 45,
+    "name": "FieldPickupItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 46,
+    "name": "FieldMutateItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 47,
+    "name": "Stat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 48,
+    "name": "UserBattle",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 49,
+    "name": "UserSkinColor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 50,
+    "name": "Beauty",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 51,
+    "name": "AdventurerBar",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 52,
+    "name": "RevivalConfirm",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 53,
+    "name": "Revival",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 54,
+    "name": "RevivalCount",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 55,
+    "name": "UserState",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 56,
+    "name": "ExpUp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 57,
+    "name": "LevelUp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 58,
+    "name": "Meso",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 59,
+    "name": "Meret",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 60,
+    "name": "CurrencyToken",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 61,
+    "name": "SkillUse",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 62,
+    "name": "SkillDamage",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 63,
+    "name": "SkillSync",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 64,
+    "name": "SkillCancel",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 65,
+    "name": "SkillUseFailed",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 66,
+    "name": "StateSkill",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 67,
+    "name": "SkillCooldown",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 68,
+    "name": "SkillResetCooldown",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 69,
+    "name": "SkillPoint",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 70,
+    "name": "AttributePoint",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 71,
+    "name": "CharacterCreate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 72,
+    "name": "Buff",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 73,
+    "name": "FieldPortal",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 74,
+    "name": "Job",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 75,
+    "name": "NpcMonologue",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 76,
+    "name": "NpcTalk",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 77,
+    "name": "RegionSkill",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 78,
+    "name": "FunctionCube",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 79,
+    "name": "Trigger",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 80,
+    "name": "Breakable",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 81,
+    "name": "RoomTimer",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 82,
+    "name": "Shop",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 83,
+    "name": "Quest",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 84,
+    "name": "Party",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 85,
+    "name": "Mail",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 86,
+    "name": "FieldAddNpc",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 87,
+    "name": "FieldRemoveNpc",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 88,
+    "name": "FieldDeadNpc",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 89,
+    "name": "NpcControl",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 90,
+    "name": "InteractNpc",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 91,
+    "name": "FieldAddPet",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 92,
+    "name": "FieldRemovePet",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 93,
+    "name": "SyncPetTamingPoint",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 94,
+    "name": "Tombstone",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 95,
+    "name": "Achieve",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 96,
+    "name": "UserMoveByPortal",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 97,
+    "name": "ItemTitle",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 98,
+    "name": "MassiveEvent",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 99,
+    "name": "Buddy",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 100,
+    "name": "AdminBlock",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 101,
+    "name": "InteractObject",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 102,
+    "name": "StateConsumeEp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 103,
+    "name": "StateFallDamage",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 104,
+    "name": "Cinematic",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 105,
+    "name": "Admin",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 106,
+    "name": "SetCraftMode",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 107,
+    "name": "ResponseCube",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 108,
+    "name": "LoadCubes",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 109,
+    "name": "Ugc",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 110,
+    "name": "MeretMarket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 111,
+    "name": "Gvg",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 112,
+    "name": "GuideObject",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 113,
+    "name": "KeyTable",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 114,
+    "name": "FollowNpc",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 115,
+    "name": "Notice",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 117,
+    "name": "Liftable",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 116,
+    "name": "RelocateWorld",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 118,
+    "name": "ItemFusion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 119,
+    "name": "Vibrate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 120,
+    "name": "HideVibrate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 121,
+    "name": "ShowVibrate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 122,
+    "name": "CharacterInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 123,
+    "name": "ResponseRide",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 124,
+    "name": "RideSync",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 125,
+    "name": "FittingDoll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 126,
+    "name": "BonusGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 127,
+    "name": "LoadUgcMap",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 128,
+    "name": "ProxyGameObj",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 129,
+    "name": "BadgeEquip",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 130,
+    "name": "Taxi",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 131,
+    "name": "FindFields",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 132,
+    "name": "Trade",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 133,
+    "name": "InvincibleEffect",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 134,
+    "name": "Worldmap",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 135,
+    "name": "MoveEventfield",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 136,
+    "name": "DpsStat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 137,
+    "name": "DebugMode",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 138,
+    "name": "StoryBook",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 139,
+    "name": "GuideRecord",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 140,
+    "name": "Guild",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 141,
+    "name": "GroupChat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 142,
+    "name": "RecallUser",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 143,
+    "name": "Rank",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 144,
+    "name": "AppendMessageCommon",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 145,
+    "name": "AppendMessageString",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 146,
+    "name": "AppendMessageKillBoss",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 147,
+    "name": "AppendClientLog",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 148,
+    "name": "AppendMessageAssistBonus",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 149,
+    "name": "AH",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 150,
+    "name": "UiText",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 151,
+    "name": "PlayNpcSound",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 152,
+    "name": "ItemDismantle",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 153,
+    "name": "ItemEnchant",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 154,
+    "name": "BlackMarket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 155,
+    "name": "MesoMarket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 156,
+    "name": "TeamPvp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 157,
+    "name": "WebOpen",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 158,
+    "name": "Gamble",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 159,
+    "name": "FieldMaid",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 160,
+    "name": "UserMaid",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 161,
+    "name": "NewsNotification",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 162,
+    "name": "SmartRecommendBilling",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 163,
+    "name": "SystemShop",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 164,
+    "name": "AutoRevive",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 165,
+    "name": "PlayerKillNotice",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 166,
+    "name": "DailyWonder",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 167,
+    "name": "PcBangBonus",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 168,
+    "name": "DeadUser",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 169,
+    "name": "DynamicChannel",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 170,
+    "name": "UserEnv",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 171,
+    "name": "MaidCraftItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 172,
+    "name": "EnterUgcMap",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 173,
+    "name": "ItemUse",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 175,
+    "name": "Cash",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 176,
+    "name": "MyInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 178,
+    "name": "WorldShareInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 179,
+    "name": "Nametag",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 180,
+    "name": "GameEvent",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 181,
+    "name": "BannerList",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 182,
+    "name": "WaitingTicketUpdate",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 183,
+    "name": "SetPcbang",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 184,
+    "name": "Pvp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 185,
+    "name": "HomeCommand",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 186,
+    "name": "CharMaxCount",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 187,
+    "name": "World",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 188,
+    "name": "ItemDropNotice",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 189,
+    "name": "MatchParty",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 190,
+    "name": "RecallScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 191,
+    "name": "UserConditionEvent",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 192,
+    "name": "PotentialAbility",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 193,
+    "name": "EnchantScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 194,
+    "name": "BossRanking",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 195,
+    "name": "GlobalPortal",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 196,
+    "name": "QuizEvent",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 197,
+    "name": "PlaySystemSound",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 198,
+    "name": "Fishing",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 199,
+    "name": "DarkStream",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 200,
+    "name": "NpsInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 201,
+    "name": "PlayInstrument",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 202,
+    "name": "ChangeAttributes",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 203,
+    "name": "ChangeAttributesScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 204,
+    "name": "FieldProperty",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 205,
+    "name": "GameEventUserValue",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 206,
+    "name": "ResponsePet",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 207,
+    "name": "Mastery",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 208,
+    "name": "PetInventory",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 209,
+    "name": "NoticeDialog",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 210,
+    "name": "AaErr",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 211,
+    "name": "SkillMacro",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 212,
+    "name": "Banword",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 213,
+    "name": "CheckCharNameResult",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 214,
+    "name": "PlatformProtectPacket",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 215,
+    "name": "PlatformAccountSafe",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 216,
+    "name": "GlobalFactor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 217,
+    "name": "SmartPush",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 218,
+    "name": "PlayArcade",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 219,
+    "name": "DebugState",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 220,
+    "name": "CardReverseGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 221,
+    "name": "ItemLock",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 222,
+    "name": "HomeBank",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 223,
+    "name": "HomeDoctor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 224,
+    "name": "ItemSocketSystem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 225,
+    "name": "CharacterAbility",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 226,
+    "name": "ShadowBuff",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 227,
+    "name": "ShadowExpedition",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 229,
+    "name": "ItemSocketScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 230,
+    "name": "ItemSocketExpansionScroll",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 231,
+    "name": "DiceGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 232,
+    "name": "BypassKey",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 235,
+    "name": "LocalCamera",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 236,
+    "name": "HomeGame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 237,
+    "name": "PremiumClub",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 239,
+    "name": "SteamCashShop",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 241,
+    "name": "ResetCamera",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 242,
+    "name": "DungeonWaiting",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 243,
+    "name": "OneTimeEffect",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 244,
+    "name": "CameraInterpolation",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 246,
+    "name": "LegionBattle",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 247,
+    "name": "ItemScript",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 248,
+    "name": "Club",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 249,
+    "name": "EventReward",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 250,
+    "name": "HomeInvite",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 251,
+    "name": "TaskEvent",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 253,
+    "name": "DungeonReviveCount",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 256,
+    "name": "ChangeBackground",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 257,
+    "name": "RoomStageDungeon",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 258,
+    "name": "DungeonMission",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 260,
+    "name": "BuddyEmote",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 261,
+    "name": "BindItem",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 262,
+    "name": "TransferEnchant",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 263,
+    "name": "AdBalloon",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 264,
+    "name": "GmCommand",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 265,
+    "name": "GlamourAnvil",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 266,
+    "name": "PetSkinBadge",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 267,
+    "name": "DungeonHelp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 268,
+    "name": "Mentor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 270,
+    "name": "SkillBookTree",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 272,
+    "name": "BuddyBadge",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 274,
+    "name": "SyncWorld",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 275,
+    "name": "BirthdayCard",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 276,
+    "name": "SuperWorldChat",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 278,
+    "name": "Microgame",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 279,
+    "name": "Reactor",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 280,
+    "name": "SurvivalEvent",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 281,
+    "name": "MeretUse",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 282,
+    "name": "HalloweenEvent",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 283,
+    "name": "Survival",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 284,
+    "name": "SpectateMushtopia",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 285,
+    "name": "Lapenshard",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 286,
+    "name": "Prestige",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 287,
+    "name": "Ugd",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 289,
+    "name": "WorldChampion",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 290,
+    "name": "SyncValue",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 291,
+    "name": "MinimapPing",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 292,
+    "name": "MsgBox",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 293,
+    "name": "Wardrobe",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 294,
+    "name": "DynamicBanword",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 295,
+    "name": "RequestSystemInfo",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 296,
+    "name": "ChatStamp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 298,
+    "name": "Wedding",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 300,
+    "name": "WeddingBillboard",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 301,
+    "name": "HideAndSeek",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 302,
+    "name": "MessengerBrowserStamp",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 304,
+    "name": "LimitBreak",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 306,
+    "name": "Init_0x05",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 240,
+    "name": "InGameRank",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 245,
+    "name": "TimeScale",
+    "ignoreLog": false
+  },
+  {
+    "isOutbound": false,
+    "opcode": 234,
+    "name": "NpcNotice",
+    "ignoreLog": false
+  }
+]

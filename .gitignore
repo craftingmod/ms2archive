@@ -180,3 +180,8 @@ tmp
 
 # Private Data
 data
+
+# Python
+
+.venv
+**/__pycache__

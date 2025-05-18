@@ -22,6 +22,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
 
     "forceConsistentCasingInFileNames": true,
   }

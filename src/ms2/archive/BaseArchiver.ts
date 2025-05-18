@@ -76,12 +76,12 @@ export class BaseArchiver {
         if (data.rank <= localHighRank) {
           continue
         }
-        if (options.filterFn != null && !options.filterFn(data)) {
-          continue
-        }
         if (options.breakFn != null && options.breakFn(data)) {
           shouldBreak = true
           break
+        }
+        if (options.filterFn != null && !options.filterFn(data)) {
+          continue
         }
         insertList.push(data)
       }

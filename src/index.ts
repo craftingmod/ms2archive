@@ -1,6 +1,7 @@
 import { Archiver } from "./ms2/archive/Archiver.ts"
 import { Fixer } from "./ms2/archive/Fixer.ts"
 import { ArchiveStorage } from "./ms2/storage/ArchiveStorage.ts"
+
 const storage = new ArchiveStorage("ms2archive")
 
 const archiver = new Archiver(storage)
@@ -26,5 +27,7 @@ const fixer = new Fixer(storage)
 
 // await archiver.checkLastPvPPages()
 
-await archiver.archivePvPS17()
-await archiver.archivePvP()
+// await archiver.archivePvPS17()
+// await archiver.archivePvP()
+
+const worker = new Worker("./src/worker/PacketServerWorker.ts")

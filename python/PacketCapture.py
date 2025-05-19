@@ -3,7 +3,7 @@ import base64
 import json
 import mitmproxy
 
-from mitmproxy import ctx, tcp # http는 사용되지 않으므로 제거
+from mitmproxy import ctx, tcp, http # http는 사용되지 않으므로 제거
 import mitmproxy.addonmanager
 import mitmproxy.addons
 import websockets
@@ -17,12 +17,14 @@ filterIPs: List[str] = ["192.168.3.157", "183.110.1.134", "125.141.210.39", "125
 websocketURL: str = "ws://localhost:3210"
 WEBSOCKET_RECONNECT_DELAY = 5  # 초
 WEBSOCKET_RESPONSE_TIMEOUT = 3 # 초 (Node.js 응답 대기 시간)
+MAX_REASONABLE_PAYLOAD_LENGTH = 1 * 1024 * 1024  # 1MB, 예시 페이로드 최대 크기
 
 # TypedDict for better type hinting of the splitTCPPacket return value
 class SplitPacketResult(TypedDict):
   packets: List[bytes]
   remaining: bytes
   require_length: int
+  is_oversized: bool # 추가: 페이로드 길이가 비정상적으로 큰 경우 True
 
 # 서버로부터 받는 응답 형식 (예시)
 class WebSocketResponse(TypedDict):
@@ -37,6 +39,9 @@ class MS2PacketCapture:
   _listener_task: asyncio.Task | None = None
   _connecting_lock = asyncio.Lock()
   _is_connecting_or_connected: bool = False
+  
+  def request(self, flow: http.HTTPFlow): 
+    ctx.log.info(f"[HTTPLogger] Request: {flow.request.url}")
   
   def load(self, loader:mitmproxy.addonmanager.Loader):
     """mitmproxy 애드온 로드"""
@@ -106,9 +111,20 @@ class MS2PacketCapture:
     
     current_data_for_processing = self.packetBuffer.get(flowID, b"") + packetBodyRaw
       
-    splittedBody = MS2PacketCapture.splitTCPPacket(current_data_for_processing)
+    splittedBody = MS2PacketCapture.splitTCPPacket(current_data_for_processing, flow_id_for_log=flowID)
+
+    if splittedBody.get("is_oversized"): # is_oversized 키가 존재하고 True일 때
+        ctx.log.warn(
+            f"Flow {flowID}: Oversized packet detected (payload_length: {splittedBody['require_length']}). "
+            f"Original data (len: {len(current_data_for_processing)}) will be passed through without WebSocket processing. "
+            f"Buffer for this flow will be cleared."
+        )
+        message.content = current_data_for_processing # 원본 데이터 (버퍼 포함) 사용
+        self.packetBuffer[flowID] = b"" # 해당 플로우의 버퍼를 비움
+        # 웹소켓 처리 로직을 건너뛰고 종료
+        return
     
-    # 다음 메세지를 위한 버퍼 설정
+    # 정상적인 경우, 다음 메시지를 위한 버퍼 설정
     remaningPacket = splittedBody["remaining"]
     self.packetBuffer[flowID] = remaningPacket
     
@@ -310,11 +326,13 @@ class MS2PacketCapture:
     complete_packets: List[bytes] = []
     current_pos = 0
     total_data_len = len(packet_bytes)
+    # payload_length_for_return: int = 0 # Initialize for the return value
 
     while current_pos < total_data_len:
       # Minimum length required for header (2 bytes) + length field (4 bytes) = 6 bytes
       if total_data_len - current_pos < 6:
         # Not enough data for even the basic header + length field.
+        # payload_length_for_return remains as is (or could be set to indicate need for header bytes)
         # The rest of the data is considered 'remaining'.
         break
 
@@ -324,13 +342,14 @@ class MS2PacketCapture:
       try:
         # Read payload_length (little-endian unsigned integer from 4 bytes)
         payload_length = int.from_bytes(packet_bytes[current_pos + 2 : current_pos + 6], byteorder='little')
+        # payload_length_for_return = payload_length # Update with the latest parsed length
       except Exception as e:
         # This might occur if the data stream is severely corrupted, making the 4 bytes
         # uninterpretable as an integer, though highly unlikely for a simple int.from_bytes
         # if the slice is guaranteed to be 4 bytes.
         # Log the error and treat the rest of the data from current_pos as 'remaining'.
-        ctx.log.warn( # Error에서 Warn으로 변경, 너무 치명적인 오류는 아닐 수 있음
-          f"MS2PacketCapture.splitTCPPacket: Error parsing payload_length. "
+        ctx.log.warn(
+          f"MS2PacketCapture.splitTCPPacket (flow: {flow_id_for_log}): Error parsing payload_length. "
           f"Exception: {e}. "
           f"Data slice (hex): {packet_bytes[current_pos : current_pos + 6].hex()}. "
           f"Stopping parse for this chunk."
@@ -339,6 +358,19 @@ class MS2PacketCapture:
 
       # Total length of the current application packet:
       # 2 (header) + 4 (length_field) + payload_length
+
+      # Sanity check for excessively large payload_length
+      if payload_length > MAX_REASONABLE_PAYLOAD_LENGTH:
+        ctx.log.warn(
+            f"MS2PacketCapture.splitTCPPacket (flow: {flow_id_for_log}): "
+            f"Detected excessively large payload_length: {payload_length} bytes. "
+            f"This exceeds the configured maximum of {MAX_REASONABLE_PAYLOAD_LENGTH}. "
+            f"Data (hex): {packet_bytes[current_pos : current_pos + 6].hex()}. "
+            f"Stopping parse for this chunk, treating rest as remaining."
+        )
+        # 요청에 따라, 이 경우 파싱을 중단하고 원본 packet_bytes를 remaining으로 반환하며, is_oversized 플래그 설정
+        return {"packets": [], "remaining": packet_bytes, "require_length": payload_length, "is_oversized": True}
+
       current_app_packet_total_length = 6 + payload_length
         
       # Sanity check for payload_length.
@@ -347,7 +379,7 @@ class MS2PacketCapture:
       # but the primary check is whether we have enough data.
       if payload_length < 0: # Should not happen for an unsigned int.
         ctx.log.warn(
-          f"MS2PacketCapture.splitTCPPacket: Parsed a negative payload_length ({payload_length}), which is unexpected for uint. "
+          f"MS2PacketCapture.splitTCPPacket (flow: {flow_id_for_log}): Parsed a negative payload_length ({payload_length}), which is unexpected for uint. "
           f"Data (hex): {packet_bytes[current_pos : current_pos + 6].hex()}. "
           f"Stopping parse for this chunk."
         )
@@ -357,6 +389,7 @@ class MS2PacketCapture:
       if total_data_len - current_pos < current_app_packet_total_length:
         # Not enough data for the full packet (header + length_field + payload).
         # The rest of the data from current_pos is part of an incomplete packet.
+        # payload_length_for_return is already set to the payload_length of this incomplete packet.
         break
 
       # Extract the complete application packet
@@ -367,7 +400,20 @@ class MS2PacketCapture:
       current_pos += current_app_packet_total_length
 
     remaining_data = packet_bytes[current_pos:]
-    return {"packets": complete_packets, "remaining": remaining_data, "require_length": payload_length}
+
+    # Determine the 'require_length' for the return value.
+    # This should be the payload_length of the packet fragment in remaining_data, if any.
+    final_require_length = 0
+    if remaining_data:
+        if len(remaining_data) >= 6: # Enough data to read a length field
+            try:
+                final_require_length = int.from_bytes(remaining_data[2:6], byteorder='little')
+            except Exception:
+                final_require_length = -1 # Indicate error parsing length from remaining
+        else: # Not enough data in remaining_data for a full length field
+            final_require_length = -1 # Indicate more data needed for header/length
+
+    return {"packets": complete_packets, "remaining": remaining_data, "require_length": final_require_length, "is_oversized": False}
 
   def tcp_end(self, flow: tcp.TCPFlow) -> None:
     """TCP 연결 종료시 호출"""

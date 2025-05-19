@@ -44,8 +44,8 @@ export interface TCPAddress {
 export class PacketHandlerMap {
   protected readonly handlerMap = new Map<string, PacketHandler>()
 
-  public trophyRankIndex: number
-  public lastReqCharId: bigint = -1n
+  public requestedCharTime = Date.now()
+  public requestIndex = 0
 
   public charInfoWorker = new Worker(
     new URL("../worker/CharInfoPutWorker.ts", import.meta.url), {
@@ -55,15 +55,8 @@ export class PacketHandlerMap {
 
   constructor(
     public trophyRanks: TrophyRankPartial[],
-    public savedHighestRank: number,
   ) {
-    if (savedHighestRank > 0) {
-      this.trophyRankIndex = trophyRanks.findIndex(
-        (value) => (value.trophyRank) === BigInt(savedHighestRank)
-      )
-    } else {
-      this.trophyRankIndex = 0
-    }
+
   }
 
   public handleEvent(

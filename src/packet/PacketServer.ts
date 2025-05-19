@@ -30,9 +30,15 @@ export class PacketServer {
       "./data/ms2char.db",
       false,
     )
+
+    const storeCids = new Set(charDB.getCids())
+
+    const trophyRanks = loadTrophyRanks()
+
+    const trophyCids = trophyRanks.filter((value) => storeCids.has(value.characterId))
+
     this.packetHandlerMap = new PacketHandlerMap(
-      loadTrophyRanks(),
-      charDB.getMaxRank(), 
+      trophyCids, 
     )
 
     charDB.close()

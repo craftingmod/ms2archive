@@ -64,6 +64,13 @@ export class CharacterInfoDB {
     insertCharacterStoreInfos(data)
   }
 
+  public getCids() {
+    const exec = this.database.prepare(
+      `SELECT characterId FROM characterStore;`
+    ).all() as Array<{characterId: bigint}>
+    return exec.map((cidInfo) => cidInfo.characterId)
+  }
+
   public getMaxRank() {
     const exec = this.database.prepare(
       `SELECT MAX(trophyRank) AS maxTrophyRank FROM characterStore;`

@@ -107,9 +107,12 @@ export class MS2PacketHandler {
     if (opcode === 0x0078) {
       // Character Info
       const parsedPacket = readCharInfo(packetReader)
-      if (this.rootInstance.lastReqCharId === parsedPacket.characterId) {
-        this.rootInstance.trophyRankIndex += 1
+      const requestedCid = this.rootInstance.trophyRanks[this.rootInstance.requestIndex]?.characterId as bigint | undefined
+      if (parsedPacket.characterId === requestedCid) {
+        this.rootInstance.requestIndex += 1
       }
+      this.rootInstance.requestedCharTime = -1
+
       this.rootInstance.charInfoWorker.postMessage(
         decrpytedPacket
       )
@@ -168,14 +171,16 @@ export class MS2PacketHandler {
       modifyPacket = makeChatPacket(decrpytedPacket, modifyText, this.isKMS2)
     } else if (opcode === instrumentOpcode) {
       const trophyRanks = this.rootInstance.trophyRanks
-      const trophyIndex = this.rootInstance.trophyRankIndex
-      if (trophyIndex < trophyRanks.length) {
+      const trophyIndex = this.rootInstance.requestIndex
+      if (
+        trophyIndex < trophyRanks.length &&
+        (Date.now() - this.rootInstance.requestedCharTime) >= 1000
+      ) {
         // 인덱스가 적은 경우에만 조회
         const cid = trophyRanks[trophyIndex].characterId
-        if (cid !== this.rootInstance.lastReqCharId) {
-          modifyPacket = makeSearchCharPacket(decrpytedPacket, cid)
-          this.rootInstance.lastReqCharId = cid
-        }
+        modifyPacket = makeSearchCharPacket(decrpytedPacket, cid)
+        
+        this.rootInstance.requestedCharTime = Date.now()
       }
 
     } else if (opcode === 0x001E) {

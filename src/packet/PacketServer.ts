@@ -1,6 +1,8 @@
 import Bun from "bun"
 import Debug from "debug"
 import { isMessageEvent, PacketHandlerMap, type FlowEvent } from "./PacketHandler.ts"
+import { loadTrophyRanks } from "./database/TrophyRankLoader.ts"
+import { CharacterInfoDB } from "./database/CharacterInfoDB.ts"
 
 export interface PacketData {
   messageId: string
@@ -13,12 +15,27 @@ const Verbose = Debug("ms2socket:verbose:PacketServer")
 const Info = Debug("ms2socket:info:PacketServer")
 
 export class PacketServer {
-  protected readonly packetHandlerMap = new PacketHandlerMap()
+  protected readonly packetHandlerMap:PacketHandlerMap
+
+  protected readonly customSaveWorker = new Worker(
+    new URL("../worker/CustomSaveWorker.ts", import.meta.url), {
+      type: "module",
+    }
+  )
 
   constructor(
     protected readonly port: number,
   ) {
+    const charDB = new CharacterInfoDB(
+      "./data/ms2char.db",
+      false,
+    )
+    this.packetHandlerMap = new PacketHandlerMap(
+      loadTrophyRanks(),
+      charDB.getMaxRank(), 
+    )
 
+    charDB.close()
   }
 
   public listen() {

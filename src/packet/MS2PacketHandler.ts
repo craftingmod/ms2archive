@@ -1,7 +1,11 @@
 import Debug from "debug"
 import { analyzeFirstMS2Packet, ByteReader, MapleCipherDecryptor, MapleCipherEncryptor } from "ms2packet.ts"
-import { copyPacket } from "./PacketHandler.ts"
+import { copyPacket, PacketHandlerMap } from "./PacketHandler.ts"
 import { OpcodeInfoList } from "./defintion/OpcodeInfo.ts"
+import { makeChatPacket } from "./defintion/UserChat.ts"
+import { makeSearchCharPacket } from "./defintion/SearchChar.ts"
+import { getInstrumentOpcode } from "./defintion/Instrument.ts"
+import { readCharInfo } from "./defintion/CharInfo.ts"
 
 const Verbose = Debug("ms2socket:verbose:MS2PacketHandler")
 
@@ -24,6 +28,7 @@ export class MS2PacketHandler {
   public readonly handshakeInfo: ReturnType<typeof analyzeFirstMS2Packet>
 
   public constructor(
+    protected rootInstance: PacketHandlerMap,
     protected firstPacket: Uint8Array,
   ) {
     this.handshakeInfo = analyzeFirstMS2Packet(firstPacket)
@@ -63,6 +68,10 @@ export class MS2PacketHandler {
 
   }
 
+  public get isKMS2() {
+    return this.handshakeInfo.version >= 2000
+  }
+
   public handlePacket(
     packet: Uint8Array,
     from: "server" | "client",
@@ -81,9 +90,10 @@ export class MS2PacketHandler {
       packet,
     )
 
-    const decryptionInfo = this.decryptor.client.decrypt(decrpytedPacket)
+    // Decrypt
+    this.decryptor.client.decrypt(decrpytedPacket)
 
-    Verbose(`[Server->Client] Decrypted packet: ${decrpytedPacket.toHex()}`)
+    Verbose(`[Server->Client] Decrypted packet: ${toHexSeperate(decrpytedPacket, 100)}`)
 
     const packetReader = new ByteReader(decrpytedPacket, 6)
 
@@ -92,6 +102,17 @@ export class MS2PacketHandler {
 
     if (opcodeInfo?.ignoreLog === false) {
       Verbose(`[Server->Client] Opcode: ${opcodeInfo.name}(${to16(opcode)})`)
+    }
+
+    if (opcode === 0x0078) {
+      // Character Info
+      const parsedPacket = readCharInfo(packetReader)
+      if (this.rootInstance.lastReqCharId === parsedPacket.characterId) {
+        this.rootInstance.trophyRankIndex += 1
+      }
+      this.rootInstance.charInfoWorker.postMessage(
+        decrpytedPacket
+      )
     }
 
 
@@ -116,9 +137,12 @@ export class MS2PacketHandler {
       packet,
     )
 
-    const decryptionInfo = this.decryptor.server.decrypt(decrpytedPacket)
+    // Decrypt
+    this.decryptor.server.decrypt(decrpytedPacket)
 
-    Verbose(`[Client->Server] Decrypted packet: ${toHexSeperate(decrpytedPacket)}`)
+    const packetPreview = toHexSeperate(decrpytedPacket, 100)
+
+    Verbose(`[Client->Server] Decrypted packet: ${packetPreview}`)
 
     const packetReader = new ByteReader(decrpytedPacket, 6)
 
@@ -129,11 +153,57 @@ export class MS2PacketHandler {
       Verbose(`[Client->Server] Opcode: ${opcodeInfo.name}(${to16(opcode)})`)
     }
 
+    let modifyPacket: Uint8Array | null = null
+    
+    const instrumentOpcode = getInstrumentOpcode(this.isKMS2)
+
     if (opcode === 0x0011) {
       packetReader.readUInt() // 00000000
       const text = packetReader.readUnicodeString()
       Info(`[Client->Server] Chat: ${text}`)
+
+      // const modifyText = `[Steve]: ${text}`
+      const modifyText = text
+
+      modifyPacket = makeChatPacket(decrpytedPacket, modifyText, this.isKMS2)
+    } else if (opcode === instrumentOpcode) {
+      const trophyRanks = this.rootInstance.trophyRanks
+      const trophyIndex = this.rootInstance.trophyRankIndex
+      if (trophyIndex < trophyRanks.length) {
+        // 인덱스가 적은 경우에만 조회
+        const cid = trophyRanks[trophyIndex].characterId
+        if (cid !== this.rootInstance.lastReqCharId) {
+          modifyPacket = makeSearchCharPacket(decrpytedPacket, cid)
+          this.rootInstance.lastReqCharId = cid
+        }
+      }
+
+    } else if (opcode === 0x001E) {
+      const readerTemp = new DataView(decrpytedPacket.buffer)
+      const requestUID = readerTemp.getBigUint64(6, true)
+
+      Info(`[Client->Server] OPCODE: ${opcode}, UID: ${requestUID}`)
     }
+    
+
+    if (modifyPacket != null) {
+      const encryptor = new MapleCipherEncryptor(
+        BigInt(this.handshakeInfo.version),
+        this.decryptor.server.currentIV,
+        BigInt(this.handshakeInfo.blockIV),
+        false,
+      )
+
+      Info(`[Chat] orginal packet: ${toHexSeperate(packet, 100)}`)
+
+      packet = encryptor.encryptRawPacket(modifyPacket)
+
+      Info(`[Chat] modified packet: ${toHexSeperate(packet, 100)}`)
+    }
+
+
+
+    Info(`[Client->Server] OPCODE: ${opcode}, Content: ${packetPreview}`)
 
 
     // client -> server
@@ -173,3 +243,4 @@ function toHexSeperate(bytes: Uint8Array, maxln = -1) {
 function to16(num: number) {
   return num.toString(16).padStart(2, "0")
 }
+

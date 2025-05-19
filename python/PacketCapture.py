@@ -13,8 +13,8 @@ from websockets import connect
 from websockets.protocol import State
 
 # 필터링할 서버 IP 주소 (환경에 맞게 수정)
-filterIP = "192.168.3.157" # 예시 IP, 실제 환경에 맞게 변경하세요.
-websocketURL = "ws://localhost:3210"
+filterIPs: List[str] = ["192.168.3.157", "183.110.1.134", "125.141.210.39", "125.141.210.17"] # 예시 IP, 실제 환경에 맞게 변경하세요.
+websocketURL: str = "ws://localhost:3210"
 WEBSOCKET_RECONNECT_DELAY = 5  # 초
 WEBSOCKET_RESPONSE_TIMEOUT = 3 # 초 (Node.js 응답 대기 시간)
 
@@ -22,6 +22,7 @@ WEBSOCKET_RESPONSE_TIMEOUT = 3 # 초 (Node.js 응답 대기 시간)
 class SplitPacketResult(TypedDict):
   packets: List[bytes]
   remaining: bytes
+  require_length: int
 
 # 서버로부터 받는 응답 형식 (예시)
 class WebSocketResponse(TypedDict):
@@ -48,7 +49,7 @@ class MS2PacketCapture:
     """TCP 연결 시작시 호출"""
     ctx.log.debug(f"[MS2PacketCapture] Connection {flow.id}: Client {flow.client_conn.address} -> Server {flow.server_conn.address}")
     
-    self.packetBuffer[flow.id] = b""
+    self.packetBuffer.pop(flow.id, None)
     
     # 연결 상태 확인 및 필요시 연결 시도 (리스너 시작 포함)
     await self._ensure_websocket_connection_and_listener()
@@ -74,9 +75,10 @@ class MS2PacketCapture:
     c_ip, c_port = flow.client_conn.address
         
     handlePacket = False
-    if s_ip == filterIP and (20000 <= s_port <= 33000):
+    # s_ip in filterIPs and c_ip in filterIPs
+    if 20000 <= s_port <= 34000:
       handlePacket = True
-    if c_ip == filterIP and (20000 <= c_port <= 33000):
+    elif 20000 <= c_port <= 34000:
       handlePacket = True
         
     if not handlePacket:
@@ -111,7 +113,7 @@ class MS2PacketCapture:
     self.packetBuffer[flowID] = remaningPacket
     
     if len(remaningPacket) > 0:
-      ctx.log.info(f"Remaining Packets: {len(remaningPacket)} bytes.")
+      ctx.log.info(f"Remaining Packets: {len(remaningPacket)} bytes. (Required {splittedBody["require_length"]})")
       
     # 한번에 보내기
     encodedBody = [
@@ -278,9 +280,9 @@ class MS2PacketCapture:
     s_ip, s_port = flow.server_conn.address
     c_ip, c_port = flow.client_conn.address
         
-    if s_ip == filterIP and (20000 <= s_port <= 33000):
+    if s_ip in filterIPs and (20000 <= s_port <= 33000):
       return True
-    if c_ip == filterIP and (20000 <= c_port <= 33000):
+    if c_ip in filterIPs and (20000 <= c_port <= 33000):
       return True
     
     return False
@@ -365,7 +367,7 @@ class MS2PacketCapture:
       current_pos += current_app_packet_total_length
 
     remaining_data = packet_bytes[current_pos:]
-    return {"packets": complete_packets, "remaining": remaining_data}
+    return {"packets": complete_packets, "remaining": remaining_data, "require_length": payload_length}
 
   def tcp_end(self, flow: tcp.TCPFlow) -> None:
     """TCP 연결 종료시 호출"""

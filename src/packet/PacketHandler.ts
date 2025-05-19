@@ -1,36 +1,16 @@
+import type { TrophyRankPartial } from "./database/TrophyRankLoader.ts"
 import { MS2PacketHandler } from "./MS2PacketHandler.ts"
 import type { PacketData } from "./PacketServer.ts"
 import Debug from "debug"
 
 
 const Verbose = Debug("ms2socket:verbose:PacketHandler")
-const handlerMap = new Map<string, MS2PacketHandler>()
-
-export function handlePacketOld(packetData: PacketData): Uint8Array {
-  const { socketUID, messageIndex } = splitSocketIdAndIndex(packetData)
-  const packet = Uint8Array.fromBase64(packetData.content_base64)
-
-  const handler = handlerMap.get(socketUID)
-  Verbose(`SocketUID: ${socketUID}, Index: ${messageIndex}, PacketLength: ${packet.length}`)
-  
-  if (handler == null) {
-    handlerMap.set(socketUID, new MS2PacketHandler(
-      packet
-    ))
-    return packet
-  }
-
-  Verbose(`Packet: ${toHexSeperate(packetData.content_base64, 50)}`)
-
-  const fromWhere = packetData.direction === "client_to_server" ? "client" : "server"
-  return handler.handlePacket(packet, fromWhere)
-}
 
 export function copyPacket(packetBytes: Uint8Array) {
   return new Uint8Array(packetBytes)
 }
 
-function splitSocketIdAndIndex(packetData: PacketData) {
+export function splitSocketIdAndIndex(packetData: PacketData) {
   const messageId = packetData.messageId
   const postfixPart = messageId.substring(messageId.indexOf("_") + 1)
   return {
@@ -41,7 +21,7 @@ function splitSocketIdAndIndex(packetData: PacketData) {
   }
 }
 
-function toHexSeperate(base64: string, maxln = -1) {
+export function toHexSeperate(base64: string, maxln = -1) {
   const rawPacket = Uint8Array.fromBase64(base64).toHex()
   let hexPacket = ""
   
@@ -64,6 +44,28 @@ export interface TCPAddress {
 export class PacketHandlerMap {
   protected readonly handlerMap = new Map<string, PacketHandler>()
 
+  public trophyRankIndex: number
+  public lastReqCharId: bigint = -1n
+
+  public charInfoWorker = new Worker(
+    new URL("../worker/CharInfoPutWorker.ts", import.meta.url), {
+      type: "module",
+    }
+  )
+
+  constructor(
+    public trophyRanks: TrophyRankPartial[],
+    public savedHighestRank: number,
+  ) {
+    if (savedHighestRank > 0) {
+      this.trophyRankIndex = trophyRanks.findIndex(
+        (value) => (value.trophyRank) === BigInt(savedHighestRank)
+      )
+    } else {
+      this.trophyRankIndex = 0
+    }
+  }
+
   public handleEvent(
     packetEvent: FlowStartEvent | FlowMessageEvent | FlowEndEvent,
   ) {
@@ -81,6 +83,7 @@ export class PacketHandlerMap {
 
   protected handleEventStart(packetEvent: FlowStartEvent) {
     this.handlerMap.set(packetEvent.flowId, new PacketHandler(
+      this,
       packetEvent.flowId,
       tcpAddress(packetEvent.server_address),
       tcpAddress(packetEvent.client_address),
@@ -132,6 +135,7 @@ export class PacketHandler {
   protected ms2Handler: MS2PacketHandler | null = null
 
   constructor(
+    protected readonly rootInstance: PacketHandlerMap,
     protected readonly flowId: string,
     protected readonly serverAddr: TCPAddress,
     protected readonly clientAddr: TCPAddress,
@@ -142,7 +146,7 @@ export class PacketHandler {
   public handlePacket(packet: Uint8Array, from: "server" | "client") {
     if (this.ms2Handler == null) {
       // init with first packet
-      this.ms2Handler = new MS2PacketHandler(packet)
+      this.ms2Handler = new MS2PacketHandler(this.rootInstance, packet)
       return packet
     }
     return this.ms2Handler.handlePacket(packet, from)

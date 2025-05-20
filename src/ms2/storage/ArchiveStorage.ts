@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite"
 import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts"
 import type { MS2Article } from "../fetch/ArticleFetch.ts"
-import { joinOrNull } from "../Util.ts"
+import { joinOrNull } from "../util/MS2ParseUtil.ts"
 import type { MS2Comment } from "../struct/MS2Comment.ts"
 
 /**

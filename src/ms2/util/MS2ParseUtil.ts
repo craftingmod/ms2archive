@@ -1,5 +1,5 @@
 import { TZDate } from "@date-fns/tz"
-import { Timezone } from "./Config.ts"
+import { Timezone } from "../Config.ts"
 
 function getFirstOrNull<T>(arr: T[] | T | null | undefined) {
   if (arr == null) {
@@ -124,4 +124,9 @@ export function joinOrNull(arr: string[] | undefined | null) {
     return null
   }
   return arr.join(",")
+}
+
+export function parseLevel(levelstr: string) {
+  const level = extractNumber(levelstr.match(/Lv\.\d+/)) ?? -1
+  return level
 }

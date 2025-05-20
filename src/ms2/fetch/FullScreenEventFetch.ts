@@ -1,6 +1,6 @@
 import { load as loadDOM } from "cheerio"
 import type { Element } from "domhandler"
-import { extractNumber } from "../Util.ts"
+import { extractNumber } from "../util/MS2ParseUtil.ts"
 import Path from "node:path/posix"
 import Bun from "bun"
 import fs from "fs/promises"

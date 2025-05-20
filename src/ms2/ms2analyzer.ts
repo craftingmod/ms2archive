@@ -16,11 +16,17 @@ import { type ClearInfo, shirinkPartyId } from "./database/ClearInfo.js"
 import type { CharacterStoreInfo } from "./database/CharacterInfo.js"
 import { InternalServerError } from "./fetch/FetchError.ts"
 import { addMonths, isFuture, subMonths } from "date-fns"
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 const debug = Debug("ms2:debug:analyzer")
 const nicknameRefreshTime = 1000 * 60 * 60 * 24 * 7 // 7 days
 const updateCooltime = 1000 * 60 * 60 * 24 * 1 // 1 day
 
+/**
+ * 3년이 지나서 좀 낡았어도 이것만한 던전 클리어
+ * 파티원 파싱기가 없으므로
+ * 계속 쓰기
+ */
 export class MS2Analyzer {
   protected readonly dungeonId: DungeonId
   protected readonly ms2db: MS2Database
@@ -157,7 +163,7 @@ export class MS2Analyzer {
       }
       // 파티 정보 DB다가 넣기
       const partyId = shirinkPartyId(party.partyId)
-      Array.from({ length: 10 })
+
       const insertData: ClearInfo = {
         clearRank: party.clearRank,
         partyId: partyId,
@@ -219,7 +225,8 @@ export class MS2Analyzer {
       // 가장 마지막으로 갱신된 타임스탬프 구하기
       const updateTimeDelta = Math.abs(nowTime - queryUser.lastUpdatedTime.getTime())
 
-      if (isSameNickname && isSameInfo && hasTrophy && hasProfile && (queryAcc || queryNoAcc) && updateTimeDelta < updateCooltime) {
+      // 강제로 이거 쓰기
+      if (Math.random() <= 1 || isSameNickname && isSameInfo && hasTrophy && hasProfile && (queryAcc || queryNoAcc) && updateTimeDelta < updateCooltime) {
         // 업데이트 필요 없음 (마킹만)
         debug(`[${chalk.green(member.nickname)}] Skipping.. (enough information exists)`)
         /* 업데이트 안했으므로 표기 하지 않기
@@ -371,7 +378,8 @@ export class MS2Analyzer {
       fetchUser.level = member.level
     }
     fetchUser.job = member.job
-    await this.updateCharacterInfo(fetchUser, clearDate)
+    // 섭종한 마당에 굳이.
+    // await this.updateCharacterInfo(fetchUser, clearDate)
     // 반환
     return fetchUser.characterId
   }

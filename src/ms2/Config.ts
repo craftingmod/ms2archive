@@ -6,7 +6,7 @@ export const requestCooltime = 1000
 /**
  * 유저 에이전트
  */
-export const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.2311.90 Safari/537.36"
+export const userAgent = "MapleStory2"
 
 /**
  * 레퍼러

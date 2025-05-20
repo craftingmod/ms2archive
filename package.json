@@ -23,6 +23,7 @@
     "chalk": "^5.4.1",
     "cheerio": "^1.0.0",
     "date-fns": "^4.1.0",
+    "dds-parser": "^1.0.1",
     "debug": "^4.4.0",
     "drizzle-orm": "^0.41.0",
     "got": "^14.4.7",

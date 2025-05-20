@@ -3,7 +3,7 @@ import { mkdir } from "node:fs/promises"
 import Bun from "bun"
 import fs from "node:fs/promises"
 import type { WorkerInput, WorkerReturn } from "../worker/WorkerHelper.ts"
-import { isAnimatedPath } from "./IsAnimated.ts"
+import { isAnimatedPath } from "../misc/IsAnimated.ts"
 import sharp from "sharp"
 import { fileURLToPath } from "node:url"
 

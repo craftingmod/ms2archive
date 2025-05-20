@@ -1,11 +1,11 @@
 import Debug from "debug"
 import { analyzeFirstMS2Packet, ByteReader, MapleCipherDecryptor, MapleCipherEncryptor } from "ms2packet.ts"
 import { copyPacket, PacketHandlerMap } from "./PacketHandler.ts"
-import { OpcodeInfoList } from "./defintion/OpcodeInfo.ts"
-import { makeChatPacket } from "./defintion/UserChat.ts"
-import { makeSearchCharPacket } from "./defintion/SearchChar.ts"
-import { getInstrumentOpcode } from "./defintion/Instrument.ts"
-import { readCharInfo } from "./defintion/CharInfo.ts"
+import { OpcodeInfoList } from "./defintion/internal/OpcodeInfo.ts"
+import { makeChatPacket } from "./defintion/internal/UserChat.ts"
+import { makeSearchCharPacket } from "./defintion/internal/SearchChar.ts"
+import { getInstrumentOpcode } from "./defintion/internal/Instrument.ts"
+import { readCharInfo } from "./defintion/internal/CharInfo.ts"
 
 const Verbose = Debug("ms2socket:verbose:MS2PacketHandler")
 

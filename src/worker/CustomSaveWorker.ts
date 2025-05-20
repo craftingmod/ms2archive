@@ -4,8 +4,8 @@ import Path from "node:path"
 import fs from "fs/promises"
 import { sleep } from "bun"
 
-/* eslint-disable no-var, @typescript-eslint/no-unused-vars */
-declare var self: Worker
+/* eslint-disable @typescript-eslint/no-unused-vars */
+declare const self: Worker
 
 const dfPath = "C:/Nexon/MapleStory2"
 

@@ -41,7 +41,7 @@ export const pvpPostfix = `Rank/PVP`
 export const guildPvPPostfix = `Rank/GuildPVP`
 // ======================
 
-const profileURLPrefix = `https://ua-maplestory2.nexon.com/`
+export const profileURLPrefix = `https://ua-maplestory2.nexon.com/`
 const profileURLPrefixLong = `${profileURLPrefix}profile/`
 const jobIconURLPrefix = `https://ssl.nexon.com/S2/Game/maplestory2/MAVIEW/ranking/`
 

@@ -79,6 +79,13 @@ export class CharacterInfoDB {
     return Number(exec?.maxTrophyRank ?? -1)
   }
 
+  public getPackets() {
+    const exec = this.database.prepare(
+      `SELECT characterId, rawPacket FROM characterStore;`
+    ).all() as Array<{rawPacket: Uint8Array, characterId: bigint}>
+    return exec
+  }
+
   public close() {
     this.database.close(false)
   }

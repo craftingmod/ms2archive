@@ -9,6 +9,7 @@
         "chalk": "^5.4.1",
         "cheerio": "^1.0.0",
         "date-fns": "^4.1.0",
+        "dds-parser": "^1.0.1",
         "debug": "^4.4.0",
         "drizzle-orm": "^0.41.0",
         "got": "^14.4.7",
@@ -314,6 +315,8 @@
     "css-what": ["css-what@6.1.0", "", {}, "sha512-HTUrgRJ7r4dsZKU6GjmpfRK1O76h97Z8MfS1G0FozR+oF2kG6Vfe8JE6zwrkbxigziPHinCJ+gCPjA9EaBDtRw=="],
 
     "date-fns": ["date-fns@4.1.0", "", {}, "sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg=="],
+
+    "dds-parser": ["dds-parser@1.0.1", "", {}, "sha512-T7/hvdtB96hZkm6vBkzXtyIR06kU4bHtpkn8S5v1d6cHkc4oJIgOLzWF/8XydXb27423H39q7CDbzLmOqJYmEQ=="],
 
     "debug": ["debug@4.4.0", "", { "dependencies": { "ms": "^2.1.3" } }, "sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA=="],
 

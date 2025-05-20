@@ -103,3 +103,43 @@ export class WorkerHelper<I, O> {
     }
   }
 }
+
+export class SimpleWorkerHelper<I> {
+  public readonly workers: Worker[]
+  protected workerIndex = 0
+
+  public constructor(
+    protected scriptURL: URL,
+    protected threads: number,
+  ) {
+    this.workers = new Array(this.threads)
+    for (let i = 0; i < this.threads; i += 1) {
+      const worker = new Worker(scriptURL, {
+        type: "module",
+      })
+      this.workers[i] = worker
+    }
+  }
+
+  public request(inputs: I[]) {
+    if (inputs.length <= 0) {
+      return
+    }
+    for (let i = 0; i < inputs.length; i += 1) {
+      const workIndex = this.workerIndex + i
+      const worker = this.workers[workIndex % this.threads]
+
+      worker.postMessage({
+        workIndex: workIndex,
+        data: inputs[i],
+      } satisfies WorkerInput<I>)
+      this.workerIndex += 1
+    }
+  }
+
+  public close() {
+    for (const worker of this.workers) {
+      worker.terminate()
+    }
+  }
+}

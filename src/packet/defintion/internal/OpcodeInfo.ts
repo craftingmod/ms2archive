@@ -1,4 +1,4 @@
-import PacketDefJSON from "../../../res/PacketDefinitions.json"
+import PacketDefJSON from "../PacketDefinitions.json"
 
 export interface IOpcodeInfo {
   isOutbound: boolean,

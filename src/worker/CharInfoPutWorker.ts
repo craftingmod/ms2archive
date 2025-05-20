@@ -1,12 +1,12 @@
 import { ByteReader } from "ms2packet.ts"
 import { CharacterInfoDB } from "../packet/database/CharacterInfoDB.ts"
 import { loadTrophyRanks } from "../packet/database/TrophyRankLoader.ts"
-import { readCharInfo } from "../packet/defintion/CharInfo.ts"
+import { readCharInfo } from "../packet/defintion/internal/CharInfo.ts"
 import Debug from "debug"
 
 
-/* eslint-disable no-var, @typescript-eslint/no-unused-vars */
-declare var self: Worker
+/* eslint-disable @typescript-eslint/no-unused-vars */
+declare const self: Worker
 
 const Info = Debug("ms2socket:info:charInfoWorker")
 

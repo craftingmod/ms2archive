@@ -1,4 +1,3 @@
-import { requestBlob } from "../ms2/fetch/BaseFetch.ts"
 import { profileURLPrefix } from "../ms2/util/MS2FetchUtil.ts"
 import { CharacterInfoDB } from "../packet/database/CharacterInfoDB.ts"
 import { decodeCharacterInfoPacket, extractUgcItemLook } from "../packet/defintion/charinfo/DefCharInfo.ts"
@@ -8,6 +7,7 @@ import fs from "node:fs/promises"
 import { SimpleWorkerHelper } from "../worker/WorkerHelper.ts"
 import type { M2UMessage } from "../worker/M2UWorker.ts"
 import { sleep } from "bun"
+import { fetchBlob } from "../ms2/fetch/GenericFetch.ts"
 
 const Verbose = Debug("ms2archive:verbose:ugc")
 
@@ -70,7 +70,7 @@ export async function runUGC() {
 
     Verbose(`Processing ${fileName}.. (${processIndex++}/${ugcURL.length})`)
 
-    const itemBlob = await requestBlob(
+    const itemBlob = await fetchBlob(
       `${profileURLPrefix}${url}`
     )
 
@@ -89,7 +89,7 @@ export async function runUGC() {
 
     const iconURL = url.replace("item/", "itemicon/").replace(".m2u", ".png")
 
-    const iconBlob = await requestBlob(
+    const iconBlob = await fetchBlob(
       `${profileURLPrefix}${iconURL}`
     )
 

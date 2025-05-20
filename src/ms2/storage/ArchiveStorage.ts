@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite"
 import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts"
 import type { MS2Article } from "../fetch/ArticleFetch.ts"
 import { joinOrNull } from "../Util.ts"
-import type { MS2Comment } from "../base/MS2Comment.ts"
+import type { MS2Comment } from "../struct/MS2Comment.ts"
 
 /**
  * 게시글 DB 테이블 구조

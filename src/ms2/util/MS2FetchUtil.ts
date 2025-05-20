@@ -1,8 +1,8 @@
 import type { Cheerio, CheerioAPI } from "cheerio"
 import { Job, numberToJob } from "../struct/MS2CharInfo.ts"
-import { MS2ItemTier, MS2Tradable } from "../struct/ms2gatcha.ts"
+import { MS2ItemTier, MS2Tradable } from "../struct/MS2Gatcha.ts"
 import Debug from "debug"
-import { WrongPageError } from "../../fetch/fetch/FetchError.ts"
+import { WrongPageError } from "../fetch/FetchError.ts"
 
 const verbose = Debug("ms2:verbose:ms2fetchutil")
 

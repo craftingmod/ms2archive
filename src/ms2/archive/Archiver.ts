@@ -4,9 +4,9 @@ import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleI
 import type { EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { sleep } from "bun";
-import { fetchGuildRankList, fetchTrophyRankList } from "../legacy/ms2fetch.ts";
+import { fetchGuildRankList, fetchTrophyRankList } from "../fetch/MS2RankFetch.ts";
 import { Job, JobCode } from "../struct/MS2CharInfo.ts";
-import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../fetch/fetch/MS2RankFetch.ts";
+import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../fetch/MS2RankFetch.ts";
 import { BaseArchiver } from "./BaseArchiver.ts";
 
 const debug = Debug("ms2archive:Archiver")

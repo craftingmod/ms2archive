@@ -1,10 +1,11 @@
-import { requestBlob, requestMS2Get, requestText } from "./BaseFetch.ts"
 import { load as loadDOM } from "cheerio"
 import type { Element } from "domhandler"
 import { extractNumber } from "../Util.ts"
 import Path from "node:path/posix"
 import Bun from "bun"
 import fs from "fs/promises"
+import { fetchBlob, fetchText } from "./GenericFetch.ts"
+import { fetchMS2Text } from "./MS2BaseFetch.ts"
 
 type FullscreenEventData = Awaited<ReturnType<typeof fetchFullScreenEvent>>
 
@@ -18,7 +19,7 @@ export async function fetchFullScreenEvent(url: string) {
   if (!url.startsWith("https://maplestory2.nexon.com/")) {
     throw new Error("URL must start with maplestory2.nexon.com!")
   }
-  const response = await requestMS2Get(url.substring(30))
+  const response = await fetchMS2Text(url.substring(30))
   if (response == null) {
     throw new Error("Response must be not null!")
   }
@@ -218,7 +219,10 @@ export class FSEFetcher {
     }
 
     // css/js 내용
-    let content = await requestText(url)
+    let content = await fetchText(url)
+    if (content == null) {
+      throw new Error("응답이 NULL입니다!")
+    }
     // Path 확정
     const localPath = await this.getLocalPathSafety(url, eventId, Bun.hash(content))
 
@@ -288,7 +292,7 @@ export class FSEFetcher {
     }
 
     // 리소스 다운로드
-    const resource = await requestBlob(url)
+    const resource = await fetchBlob(url)
 
     if (resource == null) {
       throw new Error(`${url} is null!`)

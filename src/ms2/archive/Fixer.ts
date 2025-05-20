@@ -1,6 +1,6 @@
 import { fetchArticle, fetchShopItemList, writeImages } from "../fetch/ArticleFetch.ts"
 import type { BoardCategory } from "../fetch/BoardRoute"
-import { fetchArchitectRankList } from "../fetch/fetch/MS2RankFetch.ts"
+import { fetchArchitectRankList } from "../fetch/MS2RankFetch.ts"
 import type { ArchiveStorage } from "../storage/ArchiveStorage.ts"
 import fs from "node:fs/promises"
 import { Database } from "bun:sqlite"

@@ -1,18 +1,19 @@
 import { load as loadDOM, type CheerioAPI } from "cheerio"
-import { requestBlob, requestMS2Get } from "./BaseFetch.ts"
 import { BoardRoute, BoardCategory } from "./BoardRoute.ts"
 import { extractNumber, extractQuoteNum, parseSimpleTime, parseTime } from "../Util.ts"
-import { parseJobFromIcon } from "../base/MS2Job.ts"
-import { parseLevel } from "../base/MS2Level.ts"
-import type { MS2Author } from "../base/MS2Author.ts"
+import { parseJobFromIcon } from "../struct/MS2Job.ts"
+import { parseLevel } from "../struct/MS2Level.ts"
+import type { MS2Author } from "../struct/MS2Author.ts"
 import type { Element } from "domhandler"
-import type { MS2Comment } from "../base/MS2Comment.ts"
+import type { MS2Comment } from "../struct/MS2Comment.ts"
 import { replaceStyle } from "./StyleReplacer.ts"
 import Bun from "bun"
 import { TZDate } from "@date-fns/tz"
 import { Timezone } from "../Config.ts"
 import Path from "node:path"
 import type { EventComment } from "../storage/ArchiveStorage.ts"
+import { fetchMS2Text } from "./MS2BaseFetch.ts"
+import { fetchBlob } from "./GenericFetch.ts"
 
 export const UnknownTime = new TZDate(2025, 6, 7, 7, 7, Timezone)
 
@@ -34,7 +35,7 @@ const resourceExt = [
 export async function fetchArticle(board: BoardCategory, articleId: number, skipComment = false) {
   // Route마다 다른 파서
   const boardRoute = BoardRoute[board]  
-  const rawHTML = await requestMS2Get(
+  const rawHTML = await fetchMS2Text(
     boardRoute.detailRoute(articleId)
   )
   
@@ -149,7 +150,7 @@ export async function fetchArticle(board: BoardCategory, articleId: number, skip
 
   // 댓글 더 불러오기
   while (comments.length < commentCount && !skipComment) {
-    const commentHTML = await requestMS2Get(
+    const commentHTML = await fetchMS2Text(
       boardRoute.commentRoute(articleId, commentPage)
     )
     if (commentHTML == null) {
@@ -312,7 +313,7 @@ export async function fetchArticleList(board: BoardCategory, page = 1) {
   // Route마다 다른 파서
   const boardRoute = BoardRoute[board]  
   // 깡 HTML
-  const rawHTML = await requestMS2Get(
+  const rawHTML = await fetchMS2Text(
     boardRoute.listRoute(page)
   )
   
@@ -377,7 +378,7 @@ export async function fetchShopItemList(page = 1) {
   // Route마다 다른 파서
   const boardRoute = BoardRoute[BoardCategory.Cashshop]  
   // 깡 HTML
-  const rawHTML = await requestMS2Get(
+  const rawHTML = await fetchMS2Text(
     boardRoute.listRoute(page)
   )
   
@@ -427,7 +428,7 @@ export async function fetchEventsList(page = 1) {
    // Route마다 다른 파서
    const boardRoute = BoardRoute[BoardCategory.Events]  
    // 깡 HTML
-   const rawHTML = await requestMS2Get(
+   const rawHTML = await fetchMS2Text(
      boardRoute.listRoute(page)
    )
    
@@ -474,7 +475,7 @@ export async function fetchEventsList(page = 1) {
 }
 
 export async function fetchEventComments(eventIndex:number, page = 1) {
-  const rawHTML = await requestMS2Get(
+  const rawHTML = await fetchMS2Text(
     `Events/_20190725/_PartialCommentList?pn=${
         page}&id=${eventIndex}&ls=30&bn=commentevents`
   )
@@ -502,7 +503,7 @@ export async function fetchEventComments(eventIndex:number, page = 1) {
       const imagePart2 = imagePart1.split("/")
       charId = BigInt(imagePart2[2])
   
-      const imageBlob = await requestBlob(charImage)
+      const imageBlob = await fetchBlob(charImage)
 
       if (imageBlob != null) {
         imagePath = `data/images/fullevents/${eventIndex}/${charId}_${imagePart2[3]}`
@@ -574,7 +575,7 @@ export async function writeImages(article: MS2Article) {
       }
     } else if (url.startsWith("http")) {
       try {
-        const req = await requestBlob(url)
+        const req = await fetchBlob(url)
         if (req == null) {
           throw new Error(`${url} is null!`)
         }

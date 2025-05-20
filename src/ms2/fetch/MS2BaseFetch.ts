@@ -1,13 +1,13 @@
 import got, { HTTPError, TimeoutError } from "got"
 import chalk from "chalk"
 import { FetchError, InternalServerError, MaybeNotFoundError, MS2TimeoutError, NotFoundError, type FetchErrorInfo } from "./FetchError.ts"
-import { sleep } from "../legacy/util.ts"
 import { Agent as HttpAgent } from "node:http"
 import { Agent as HttpsAgent } from "node:https"
 import Debug from "debug"
 import { load as loadDOM, type Cheerio, type CheerioAPI } from "cheerio"
 import { ms2Domain, postfixToURL, validateTableTitle } from "../util/MS2FetchUtil.ts"
 import { maxRetry, ms2UserAgent, requestCooldown, retryCooldownSec } from "../Config.ts"
+import { sleep } from "bun"
 
 const verbose = Debug("ms2:verbose:ms2basefetch")
 const ms2HttpAgent = new HttpAgent({ keepAlive: true, maxSockets: 50 })
@@ -216,6 +216,14 @@ export async function fetchMS2(options: FetchMS2Options | string) {
     * 요청: ${JSON.stringify(optionsWithDefault, null, 2)}\n\n
     * URL: ${fetchRawURL.toString()}
   `)
+}
+
+/**
+ * 레거시용
+ */
+export async function fetchMS2Text(url: string) {
+  const response = await fetchMS2(url)
+  return response.body
 }
 
 /**

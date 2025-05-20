@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
 import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId } from "./ArticleFetch.ts"
 import { BoardCategory } from "./BoardRoute.ts"
-import { Job } from "../base/MS2Job.ts"
+import { Job } from "../struct/MS2Job.ts"
 import fs from "node:fs/promises"
 
 test.skip("기본 게시글 파싱", async () => {

@@ -1,6 +1,6 @@
 import type { RawGuestBookInfo } from "../database/GuestBookInfo.ts"
 import { WorldChatType } from "../database/WorldChatInfo.ts"
-import { MS2ItemTier, MS2Tradable, type MS2CapsuleItem } from "../struct/ms2gatcha.ts"
+import { MS2ItemTier, MS2Tradable, type MS2CapsuleItem } from "../struct/MS2Gatcha.ts"
 import { gatchaPostfix, getTierFromText, getTradableFromText, guestbookPostfix, ms2BrowserHeader, postfixToURL, queryJobFromIcon, worldChatPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2, fetchMS2Formatted } from "./MS2BaseFetch.ts"
 

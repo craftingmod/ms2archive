@@ -1,4 +1,4 @@
-import type { Job } from "./MS2Job.ts"
+import type { Job } from "../struct/MS2Job.ts"
 
 export interface MS2Author {
   job: Job,

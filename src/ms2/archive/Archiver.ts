@@ -5,8 +5,8 @@ import type { EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { sleep } from "bun";
 import { fetchGuildRankList, fetchTrophyRankList } from "../legacy/ms2fetch.ts";
-import { Job, JobCode } from "../legacy/struct/MS2CharInfo.ts";
-import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../legacy/fetch/MS2RankFetch.ts";
+import { Job, JobCode } from "../struct/MS2CharInfo.ts";
+import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../fetch/fetch/MS2RankFetch.ts";
 import { BaseArchiver } from "./BaseArchiver.ts";
 
 const debug = Debug("ms2archive:Archiver")

@@ -1,4 +1,4 @@
-import { DataTypesLite, type DefinedModelToJSObject, type SequelizeLite } from "../sqliteorm/SequelizeLite.ts"
+import { DataTypesLite, type DefinedModelToJSObject, type SequelizeLite } from "../sqlite/SequelizeLite.ts"
 
 /*
     return {

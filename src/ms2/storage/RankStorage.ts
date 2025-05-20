@@ -1,4 +1,4 @@
-import { SequelizeLite } from "../legacy/sqliteorm/SequelizeLite.ts"
+import { SequelizeLite } from "../sqlite/SequelizeLite.ts"
 import { defineGuildRankInfo } from "../legacy/database/GuildRankInfo.ts"
 import { defineTrophyRankInfo } from "../legacy/database/TrophyRankInfo.ts"
 import { defineDarkStreamInfo } from "../legacy/database/DarkStreamInfo.ts"

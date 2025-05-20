@@ -1,8 +1,8 @@
 import type { Cheerio, CheerioAPI } from "cheerio"
 import { Job, numberToJob } from "../struct/MS2CharInfo.ts"
-import { MS2ItemTier, MS2Tradable } from "../ms2gatcha.ts"
+import { MS2ItemTier, MS2Tradable } from "../struct/ms2gatcha.ts"
 import Debug from "debug"
-import { WrongPageError } from "../fetch/FetchError.ts"
+import { WrongPageError } from "../../fetch/fetch/FetchError.ts"
 
 const verbose = Debug("ms2:verbose:ms2fetchutil")
 
@@ -477,4 +477,14 @@ export function parseCommaNumber(commaNumber: string) {
   commaNumber = commaNumber.trim()
   
   return Number.parseInt(commaNumber.replaceAll(",", ""))
+}
+
+/**
+ * Undefined | null to null
+ */
+export function forceNull<T>(value: T | null | undefined): T | null {
+  if (value === undefined) {
+    return null
+  }
+  return value
 }

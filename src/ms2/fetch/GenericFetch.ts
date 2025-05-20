@@ -1,8 +1,8 @@
 import MimeTypes from "mime-types"
 import chalk from "chalk"
 import Debug from "debug"
-import type { FetchMS2Options } from "./MS2BaseFetch.ts"
-import { commonUserAgent } from "../../Config.ts"
+import type { FetchMS2Options } from "../legacy/fetch/MS2BaseFetch.ts"
+import { commonUserAgent } from "../Config.ts"
 import { InternalServerError, NotFoundError, type FetchErrorInfo } from "./FetchError.ts"
 
 const verbose = Debug("ms2:verbose:ms2basefetch")

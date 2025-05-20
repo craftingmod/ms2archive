@@ -7,14 +7,14 @@ import {
   fetchTrophyRankList,
   fetchBossClearedLastPage,
   fetchMainCharacterByNicknameInRange, // 새로 추가된 헬퍼 함수
-} from "./fetch/MS2RankFetch.js"
+} from "./fetch/fetch/MS2RankFetch.js"
 import { MIN_QUERY_DATE, shrinkProfileURL } from "./util/MS2FetchUtil.ts" // MIN_QUERY_DATE 및 shrinkProfileURL 경로 변경
 import Debug from "debug"
 import chalk from "chalk"
-import { MS2Database } from "./ms2database.js"
+import { MS2Database } from "./database/ms2database.js"
 import { type ClearInfo, shirinkPartyId } from "./database/ClearInfo.js"
 import type { CharacterStoreInfo } from "./database/CharacterInfo.js"
-import { InternalServerError } from "./fetch/FetchError.ts"
+import { InternalServerError } from "../fetch/fetch/FetchError.ts"
 import { addMonths, isFuture, subMonths } from "date-fns"
 
 const debug = Debug("ms2:debug:analyzer")

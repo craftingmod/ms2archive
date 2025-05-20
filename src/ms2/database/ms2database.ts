@@ -1,11 +1,11 @@
-import { DungeonId } from "./struct/MS2DungeonId.js"
-import { SequelizeLite } from "./sqliteorm/SequelizeLite.js"
+import { DungeonId } from "../struct/MS2DungeonId.js"
+import { SequelizeLite } from "../sqlite/SequelizeLite.js"
 import { type CharacterStoreInfo, defineCharacterInfo } from "./database/CharacterInfo.js"
 import { defineNicknameInfo, type NicknameInfo } from "./database/NicknameInfo.js"
 import { defineClearInfo } from "./database/ClearInfo.js"
-import { Job } from "./struct/MS2CharInfo.js"
-import type { CharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "./struct/MS2CharInfo.js"
-import { shrinkProfileURL } from "./util/MS2FetchUtil.js"
+import { Job } from "../struct/MS2CharInfo.js"
+import type { CharacterInfo, MainCharacterInfo, TrophyCharacterInfo } from "../struct/MS2CharInfo.js"
+import { shrinkProfileURL } from "../util/MS2FetchUtil.js"
 import { addDays, isFuture } from "date-fns"
 
 export class MS2Database extends SequelizeLite {

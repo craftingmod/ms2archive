@@ -1,5 +1,5 @@
 import { requestBlob } from "../ms2/fetch/BaseFetch.ts"
-import { profileURLPrefix } from "../ms2/legacy/util/MS2FetchUtil.ts"
+import { profileURLPrefix } from "../ms2/util/MS2FetchUtil.ts"
 import { CharacterInfoDB } from "../packet/database/CharacterInfoDB.ts"
 import { decodeCharacterInfoPacket, extractUgcItemLook } from "../packet/defintion/charinfo/DefCharInfo.ts"
 import { CustomReader } from "../packet/defintion/CustomReader.ts"

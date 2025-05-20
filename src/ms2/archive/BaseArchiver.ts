@@ -1,7 +1,7 @@
 import type { ArchiveStorage } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { RankStorage } from "../storage/RankStorage.ts";
-import type { DataTypesLite, ModelLite, ModelToJSObject } from "../legacy/sqliteorm/SequelizeLite.ts";
+import type { DataTypesLite, ModelLite, ModelToJSObject } from "../sqlite/SequelizeLite.ts";
 
 const debug = Debug("ms2:archive:basearchiver")
 

@@ -1,8 +1,9 @@
 import type { RawGuestBookInfo } from "../database/GuestBookInfo.ts"
 import { WorldChatType } from "../database/WorldChatInfo.ts"
 import { MS2ItemTier, MS2Tradable, type MS2CapsuleItem } from "../struct/MS2Gatcha.ts"
-import { gatchaPostfix, getTierFromText, getTradableFromText, guestbookPostfix, ms2BrowserHeader, postfixToURL, queryJobFromIcon, worldChatPostfix } from "../util/MS2FetchUtil.ts"
+import { gatchaPostfix, getTierFromText, getTradableFromText, guestbookPostfix, ms2BrowserHeader, postfixToURL, worldChatPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2, fetchMS2Formatted } from "./MS2BaseFetch.ts"
+import { parseJobFromIcon } from "../struct/MS2Job.ts"
 
 /**
  * 월드 채팅을 파싱합니다.
@@ -157,7 +158,7 @@ export async function fetchGuestBook(token: string, aid: bigint, page = 1) {
       // 닉네임
       const nickname = $el.find("h3 > strong").text().trim()
       // 직업
-      const job = queryJobFromIcon($el.find("h3 > span > img").attr("src") ?? "")
+      const job = parseJobFromIcon($el.find("h3 > span > img").attr("src") ?? "")
       // 레벨
       const level = Number($el.find("h3 > span").text().trim().substring(3))
 

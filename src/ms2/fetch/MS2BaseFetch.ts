@@ -3,6 +3,7 @@ import chalk from "chalk"
 import { FetchError, InternalServerError, MaybeNotFoundError, MS2TimeoutError, NotFoundError, type FetchErrorInfo } from "./FetchError.ts"
 import { Agent as HttpAgent } from "node:http"
 import { Agent as HttpsAgent } from "node:https"
+import type { Element } from "domhandler"
 import Debug from "debug"
 import { load as loadDOM, type Cheerio, type CheerioAPI } from "cheerio"
 import { ms2Domain, postfixToURL, validateTableTitle } from "../util/MS2FetchUtil.ts"
@@ -283,16 +284,16 @@ export async function fetchMS2FormattedList<T extends AllowedFormatTypes>(option
   fetchOptions: FetchMS2Options | string,
   listSelector: string,
   validateTitle?: string,
-}, formatter: ($: Cheerio<any>, index: number) => Promise<T> | Promise<T | null> | T | null,
+}, formatter: ($: Cheerio<Element>, $root: CheerioAPI, index: number) => Promise<T> | T | Promise<T | null> | null,
 ) {
   return (await fetchMS2Formatted<T[]>({
     ...options,
   }, async ($) => {
-    const $root:Cheerio<any> = $(options.listSelector)
+    const $root:Cheerio<Element> = $<Element, string>(options.listSelector)
     const formattedResults:T[] = []
     for (let i = 0; i < $root.length; i += 1) {
       const element = $root[i]
-      const result = await formatter($(element), i)
+      const result = await formatter($(element), $, i)
       if (result != null) {
         formattedResults.push(result)
       }

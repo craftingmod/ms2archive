@@ -1,6 +1,6 @@
-import { load as loadDOM, type CheerioAPI } from "cheerio"
+import { load as loadDOM, type CheerioAPI, type Cheerio } from "cheerio"
 import { BoardRoute, BoardCategory } from "./BoardRoute.ts"
-import { extractNumber, extractQuoteNum, parseSimpleTime, parseTime } from "../util/MS2ParseUtil.ts"
+import { extractNumber, extractQuoteNum, parseDashTime, parseLevelWithName, parseSimpleTime, parseTime } from "../util/MS2ParseUtil.ts"
 import { parseJobFromIcon } from "../struct/MS2Job.ts"
 import { parseLevel } from "../util/MS2ParseUtil.ts"
 import type { MS2Author } from "../struct/MS2Author.ts"
@@ -12,8 +12,9 @@ import { TZDate } from "@date-fns/tz"
 import { Timezone } from "../Config.ts"
 import Path from "node:path"
 import type { EventComment } from "../storage/ArchiveStorage.ts"
-import { fetchMS2Text } from "./MS2BaseFetch.ts"
+import { fetchMS2FormattedList, fetchMS2Text } from "./MS2BaseFetch.ts"
 import { fetchBlob } from "./GenericFetch.ts"
+import { QnaAnswerPostfix, QnAPostfix } from "../util/MS2FetchUtil.ts"
 
 export const UnknownTime = new TZDate(2025, 6, 7, 7, 7, Timezone)
 
@@ -34,11 +35,11 @@ const resourceExt = [
  */
 export async function fetchArticle(board: BoardCategory, articleId: number, skipComment = false) {
   // Route마다 다른 파서
-  const boardRoute = BoardRoute[board]  
+  const boardRoute = BoardRoute[board]
   const rawHTML = await fetchMS2Text(
     boardRoute.detailRoute(articleId)
   )
-  
+
   // 404
   if (rawHTML == null) {
     return null
@@ -81,9 +82,9 @@ export async function fetchArticle(board: BoardCategory, articleId: number, skip
   // 작성자 레벨
   const level = isGM ? -1 : parseLevel(writerPart)
   // 작성자 이름
-  let charName:string = "GM"
+  let charName: string = "GM"
   // GM 아이콘 (예외 처리)
-  let icon:string | undefined = undefined
+  let icon: string | undefined = undefined
   if (!isGM) {
     charName = writerPart.substring(writerPart.indexOf(" ") + 1).trim()
   } else {
@@ -95,7 +96,7 @@ export async function fetchArticle(board: BoardCategory, articleId: number, skip
   }
 
   // 태그
-  const tags = $(".board_info1 .tag a").map((_: number, el: Element)=> {
+  const tags = $(".board_info1 .tag a").map((_: number, el: Element) => {
     return $(el).text().trim().substring(1)
   }).toArray()
 
@@ -103,12 +104,12 @@ export async function fetchArticle(board: BoardCategory, articleId: number, skip
   // 글 내용
   const body = $(".board_view_body").html() ?? ""
   // 글 이미지 첨부파일 URL들
-  const attachments = $(".board_view_body img").map((_:number, el:Element) => {
+  const attachments = $(".board_view_body img").map((_: number, el: Element) => {
     return ($(el).attr("src") ?? "").trim()
   }).toArray().filter((v) => v.length > 0)
 
   // a로 링크한 리소스 백업
-  const linkAttachments = $(".board_view_body a").map((_:number, el:Element) => {
+  const linkAttachments = $(".board_view_body a").map((_: number, el: Element) => {
     return ($(el).attr("href") ?? "").trim()
   }).toArray().filter((href) => {
     if (href == null || href.length <= 0) {
@@ -181,7 +182,7 @@ export async function fetchArticle(board: BoardCategory, articleId: number, skip
       continue
     }
     // pseudo index
-    cmt.commentIndex = comments[i-1].commentIndex - 1
+    cmt.commentIndex = comments[i - 1].commentIndex - 1
   }
 
   // Content DOM 정리 유무
@@ -220,7 +221,7 @@ export async function fetchArticle(board: BoardCategory, articleId: number, skip
  * @returns Comment[]
  */
 export function parseComments($: CheerioAPI) {
-  const comments:MS2Comment[] = $(".comment_list > li").map((_: number, el: Element) => {
+  const comments: MS2Comment[] = $(".comment_list > li").map((_: number, el: Element) => {
     const subEl = $(el)
 
     let writer = subEl.find(".writer").text().trim()
@@ -311,12 +312,12 @@ export async function fetchArticleList(board: BoardCategory, page = 1) {
 
 
   // Route마다 다른 파서
-  const boardRoute = BoardRoute[board]  
+  const boardRoute = BoardRoute[board]
   // 깡 HTML
   const rawHTML = await fetchMS2Text(
     boardRoute.listRoute(page)
   )
-  
+
   // 404
   if (rawHTML == null) {
     return null
@@ -330,8 +331,8 @@ export async function fetchArticleList(board: BoardCategory, page = 1) {
   }
 
   const articlesDOM = $(boardRoute.articleSelector).toArray()
-  const articles:ArticleHeader[] = []
-  
+  const articles: ArticleHeader[] = []
+
   for (const article of articlesDOM) {
     const $article = loadDOM(article)
 
@@ -376,12 +377,12 @@ export async function fetchArticleList(board: BoardCategory, page = 1) {
 
 export async function fetchShopItemList(page = 1) {
   // Route마다 다른 파서
-  const boardRoute = BoardRoute[BoardCategory.Cashshop]  
+  const boardRoute = BoardRoute[BoardCategory.Cashshop]
   // 깡 HTML
   const rawHTML = await fetchMS2Text(
     boardRoute.listRoute(page)
   )
-  
+
   // 404
   if (rawHTML == null) {
     return null
@@ -395,7 +396,7 @@ export async function fetchShopItemList(page = 1) {
   }
 
   const articlesDOM = $(boardRoute.articleSelector).toArray()
-  const articles:ArticleHeader[] = []
+  const articles: ArticleHeader[] = []
 
   for (const article of articlesDOM) {
     const $article = loadDOM(article)
@@ -425,61 +426,60 @@ export async function fetchShopItemList(page = 1) {
 }
 
 export async function fetchEventsList(page = 1) {
-   // Route마다 다른 파서
-   const boardRoute = BoardRoute[BoardCategory.Events]  
-   // 깡 HTML
-   const rawHTML = await fetchMS2Text(
-     boardRoute.listRoute(page)
-   )
-   
-   // 404
-   if (rawHTML == null) {
-     return null
-   }
- 
-   const $ = loadDOM(rawHTML)
- 
-   // 게시글을 찾을 수 없음
-   if ($(".not_found").length > 0) {
-     return null
-   }
- 
-   const articlesDOM = $(boardRoute.articleSelector).toArray()
-   const articles:ArticleHeader[] = []
- 
-   for (const article of articlesDOM) {
-     const $article = loadDOM(article)
- 
-     const hrefURL = $article("li > a").attr("href") ?? ""
-     const articleId = extractNumber(hrefURL.match(/(s|sn)=\d+/)) ?? -1
- 
-     const title = ($article("li .info .title").text() ?? "").trim()
- 
-     const summary = ($article("li .info .desc").text() ?? "").trim()
- 
-     // 섬네일 추출 (섬네일만 필요하면 raw img 쿼리)
-     const thumb = $article("li .thumb img").attr("src") ?? ""
- 
-     articles.push({
-       title,
-       summary,
-       articleId,
-       likeCount: -1,
-       visitCount: -1,
-       thumbnail: thumb,
-       rawHref: hrefURL,
-     })
-   }
- 
-   return articles
+  // Route마다 다른 파서
+  const boardRoute = BoardRoute[BoardCategory.Events]
+  // 깡 HTML
+  const rawHTML = await fetchMS2Text(
+    boardRoute.listRoute(page)
+  )
+
+  // 404
+  if (rawHTML == null) {
+    return null
+  }
+
+  const $ = loadDOM(rawHTML)
+
+  // 게시글을 찾을 수 없음
+  if ($(".not_found").length > 0) {
+    return null
+  }
+
+  const articlesDOM = $(boardRoute.articleSelector).toArray()
+  const articles: ArticleHeader[] = []
+
+  for (const article of articlesDOM) {
+    const $article = loadDOM(article)
+
+    const hrefURL = $article("li > a").attr("href") ?? ""
+    const articleId = extractNumber(hrefURL.match(/(s|sn)=\d+/)) ?? -1
+
+    const title = ($article("li .info .title").text() ?? "").trim()
+
+    const summary = ($article("li .info .desc").text() ?? "").trim()
+
+    // 섬네일 추출 (섬네일만 필요하면 raw img 쿼리)
+    const thumb = $article("li .thumb img").attr("src") ?? ""
+
+    articles.push({
+      title,
+      summary,
+      articleId,
+      likeCount: -1,
+      visitCount: -1,
+      thumbnail: thumb,
+      rawHref: hrefURL,
+    })
+  }
+
+  return articles
 }
 
-export async function fetchEventComments(eventIndex:number, page = 1) {
+export async function fetchEventComments(eventIndex: number, page = 1) {
   const rawHTML = await fetchMS2Text(
-    `Events/_20190725/_PartialCommentList?pn=${
-        page}&id=${eventIndex}&ls=30&bn=commentevents`
+    `Events/_20190725/_PartialCommentList?pn=${page}&id=${eventIndex}&ls=30&bn=commentevents`
   )
-  
+
   // 404
   if (rawHTML == null) {
     return null
@@ -502,26 +502,26 @@ export async function fetchEventComments(eventIndex:number, page = 1) {
       const imagePart1 = charImage.substring(charImage.indexOf("/profile/") + 9)
       const imagePart2 = imagePart1.split("/")
       charId = BigInt(imagePart2[2])
-  
+
       const imageBlob = await fetchBlob(charImage)
 
       if (imageBlob != null) {
         imagePath = `data/images/fullevents/${eventIndex}/${charId}_${imagePart2[3]}`
-      
+
         await Bun.write(Path.resolve(imagePath), imageBlob.blob as unknown as Blob, {
           createPath: true,
-        }) 
+        })
       }
     }
-  
+
     const charJob = parseJobFromIcon($(".char_info .job").attr("src") ?? "")
-  
+
     const charName = $(".char_info .nickname").text().trim()
-  
+
     const createdAt = parseSimpleTime(
       $(".char_info .date").text().trim()
     )
-  
+
     const content = $(".comment").text().trim()
 
     eventComments.push({
@@ -595,7 +595,7 @@ export async function writeImages(article: MS2Article) {
 
 
 
-    const filename = `${article.articleId}_${(i+1).toString().padStart(3, "0")}.${extension}`
+    const filename = `${article.articleId}_${(i + 1).toString().padStart(3, "0")}.${extension}`
     const parentPath = `data/images/${article.boardName.toLowerCase()}/${article.articleId}`
 
     const imgFile = Bun.file(`./${parentPath}/${filename}`, {
@@ -616,4 +616,118 @@ export async function writeImages(article: MS2Article) {
   }
 
   return writtenPath
+}
+
+export async function fetchPlayQnA(page = 1) {
+  return fetchMS2FormattedList({
+    fetchOptions: {
+      postfix: QnAPostfix,
+      urlSearchParams: {
+        page: String(page),
+      },
+    },
+    listSelector: ".q_board_wrap > .q_board",
+  }, async ($) => {
+
+    const questionId = extractNumber($.attr("id")) ?? -1
+
+    // 태그
+    const tags = $.find(".tag a").map(
+      (_, el) => loadDOM(el, null, false).text().trim().substring(1)
+    ).toArray()
+
+    // 작성자 정보
+    const writerJob = parseJobFromIcon(
+      $.find("h3> .writer > .ico_job").attr("src") ?? ""
+    )
+
+    const writerLevelWithName = parseLevelWithName(
+      $.find("h3 > .writer").text().trim()
+    )
+
+    const writerTimstamp = parseDashTime(
+      $.find(".q_board > .about > .time").text().trim()
+    )
+
+    const answerCount = extractNumber(
+      $.find(".bt_answer > .bt_a").text()
+    ) ?? 0
+
+    const answers = [] as Array<ReturnType<typeof parseAnswerPart>>
+
+    if (answerCount >= 2) {
+      let replyPage = 1
+      while (answers.length < answerCount) {
+        const replies = await fetchPlayQnaAnswer(questionId, replyPage++)
+        answers.push(...replies)
+      }
+    } else if (answerCount === 1) {
+      answers.push(
+        parseAnswerPart(
+          (str) => $.find(".answer_list > .default").find(str)
+        )
+      )
+    }
+
+    return {
+      questionId,
+      job: writerJob,
+      level: writerLevelWithName.level,
+      nickname: writerLevelWithName.name,
+      // content: qInfo.content,
+      tags,
+      timestamp: writerTimstamp,
+      answerCount,
+      answers,
+    }
+  })
+}
+
+export async function fetchPlayQnaAnswer(requestId: number, seq = 1) {
+  return fetchMS2FormattedList({
+    fetchOptions: {
+      postfix: QnaAnswerPostfix,
+      urlSearchParams: {
+        s: String(seq),
+        so: String(requestId),
+        tp: "open",
+      },
+    },
+    listSelector: ".answer_li",
+  }, ($) => {
+    return parseAnswerPart((str) => $.find(str))
+  })
+} 
+
+function parseAnswerPart($: (str: string) => Cheerio<Element>) {
+
+  const jobURL = $(".writer > img").attr("src")?.trim() ?? ""
+
+  const writerJob = parseJobFromIcon(jobURL)
+
+  const writerLevelWithName = parseLevelWithName(
+    $(".writer").text().trim()
+  )
+
+  const timestamp = parseDashTime(
+    $(".about > .time").text().trim()
+  )
+
+  const content = $(".answer").text().trim()
+
+  const replyId = extractNumber($(".bt_like").attr("onclick")) ?? 0
+
+  const replyLike = extractNumber(
+    $(".bt_like span").text()
+  ) ?? 0
+
+  return {
+    replyId,
+    job: writerJob,
+    level: writerLevelWithName.level,
+    nickname: writerLevelWithName.name,
+    content,
+    replyLike,
+    timestamp,
+  }
 }

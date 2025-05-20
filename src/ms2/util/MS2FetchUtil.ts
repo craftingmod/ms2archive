@@ -1,7 +1,7 @@
 import type { Cheerio, CheerioAPI } from "cheerio"
-import { Job, numberToJob } from "../struct/MS2CharInfo.ts"
 import { MS2ItemTier, MS2Tradable } from "../struct/MS2Gatcha.ts"
 import Debug from "debug"
+import type { Element } from "domhandler"
 import { WrongPageError } from "../fetch/FetchError.ts"
 
 const verbose = Debug("ms2:verbose:ms2fetchutil")
@@ -39,11 +39,13 @@ export const guestbookPostfix = `Guestbook`
 export const darkStreamPostfix = `Rank/DarkStream`
 export const pvpPostfix = `Rank/PVP`
 export const guildPvPPostfix = `Rank/GuildPVP`
+export const QnAPostfix = `Kch/Qna`
+export const QnaAnswerPostfix = `Kch/QnaAnswer`
 // ======================
 
 export const profileURLPrefix = `https://ua-maplestory2.nexon.com/`
 const profileURLPrefixLong = `${profileURLPrefix}profile/`
-const jobIconURLPrefix = `https://ssl.nexon.com/S2/Game/maplestory2/MAVIEW/ranking/`
+export const jobIconURLPrefix = `https://ssl.nexon.com/S2/Game/maplestory2/MAVIEW/ranking/`
 
 export const MIN_QUERY_DATE = new Date(2015, 7, 1) // 2015/8/1
 
@@ -318,21 +320,6 @@ export function constructHouseRankParams(yyyymm: number, nickname?: string | nul
 }
 
 /**
- * Extract Job from character job icon url
- * @param iconURL Icon URL
- */
-export function queryJobFromIcon(iconURL: string) {
-  if (iconURL.startsWith(jobIconURLPrefix)) {
-    let postfix = iconURL.substring(jobIconURLPrefix.length)
-    postfix = postfix.substring(4)
-    postfix = postfix.substring(0, postfix.indexOf(".png")).toLowerCase()
-    return numberToJob(Number(postfix))
-  } else {
-    return Job.UNKNOWN
-  }
-}
-
-/**
  * Query Level from Lv.xx
  * @param lvtext Lv.xx
  */
@@ -349,8 +336,7 @@ export function queryLevelFromText(lvtext: string) {
  * @param $i DOM
  * @returns rank
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getRankFromElement($i: Cheerio<any>) {
+export function getRankFromElement($i: Cheerio<Element>) {
   const rankStr = $i.find(".first_child").text().trim()
   let rank = -1
   if (rankStr.length <= 0) {

@@ -1,4 +1,5 @@
-import type { Job, TrophyCharacterInfo } from "./MS2CharInfo.ts"
+import type { TrophyCharacterInfo } from "./MS2CharInfo.ts"
+import { Job } from "./MS2Job.ts"
 
 export type TrophyRankInfo = Omit<TrophyCharacterInfo, "job" | "level">
 

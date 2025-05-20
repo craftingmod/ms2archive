@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
-import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId } from "./ArticleFetch.ts"
+import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, fetchPlayQnA } from "./ArticleFetch.ts"
 import { BoardCategory } from "./BoardRoute.ts"
-import { Job } from "../struct/MS2Job.ts"
+import { Job, parseJobFromIcon } from "../struct/MS2Job.ts"
 import fs from "node:fs/promises"
 
 test.skip("기본 게시글 파싱", async () => {
@@ -156,3 +156,18 @@ test.skip("전체화면 이벤트 댓글 파싱", async () => {
 
   expect(comments).toBeArrayOfSize(30)
 }, 60000)
+
+test("QnA 페이지 파싱 테스트", async () => {
+  const qnaPage = await fetchPlayQnA(5)
+  if (qnaPage != null) {
+    console.log(JSON.stringify(qnaPage, null, 2))
+  }
+
+  expect(qnaPage.length).toBe(10)
+})
+
+test("직업 구별 테스트", () => {
+  const jobURL = "https://ssl.nexon.com/S2/Game/maplestory2/MAVIEW/ranking/ico_priest.png"
+
+  expect(parseJobFromIcon(jobURL)).toBe(Job.Priest)
+})

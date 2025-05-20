@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
 import { fetchArchitectRankList, fetchBossClearedByDate, fetchBossClearedLastPage, fetchBossClearedRate, fetchDarkStreamRankList, fetchGuildRankList, fetchPvPRankList, fetchTrophyRankList } from "./MS2RankFetch.ts"
 import { DungeonId } from "../struct/MS2DungeonId.ts"
-import { Job } from "../struct/MS2CharInfo.ts"
+import { Job } from "../struct/MS2Job.ts"
 
 test("트로피 파싱 테스트", async () => {
   const trophyList = await fetchTrophyRankList(1)

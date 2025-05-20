@@ -36,6 +36,22 @@ export enum JobName {
   Beginner = "초보자",
 }
 
+export const JobCode: { [key in Job]: number } = {
+  [Job.UNKNOWN]: -1,
+  [Job.Archer]: 50,
+  [Job.Assassin]: 80,
+  [Job.Berserker]: 20,
+  [Job.HeavyGunner]: 60,
+  [Job.Knight]: 10,
+  [Job.Priest]: 40,
+  [Job.RuneBlader]: 90,
+  [Job.SoulBinder]: 110,
+  [Job.Striker]: 100,
+  [Job.Thief]: 70,
+  [Job.Wizard]: 30,
+  [Job.Beginner]: 1,
+}
+
 /**
  * 직업 -> 직업 이름
  */
@@ -61,7 +77,7 @@ const jobIconPrefix = `https://ssl.nexon.com/S2/Game/maplestory2/MAVIEW/ranking/
  * Extract Job from character job icon url
  * @param iconURL Icon URL
  */
-export function parseJobFromIcon(iconURL: string) {
+export function parseJobFromIcon(iconURL: string): Job {
   if (iconURL.startsWith(jobIconPrefix)) {
     let postfix = iconURL.substring(jobIconPrefix.length)
     postfix = postfix.substring(4)
@@ -97,4 +113,16 @@ export function parseJobFromIcon(iconURL: string) {
   } else {
     return Job.Beginner
   }
+}
+
+/**
+ * 숫자(인덱싱 같은 거)를 직업으로 변환
+ * @param num number
+ * @returns 직업
+ */
+export function numberToJob(num: number) {
+  if (Math.floor(num) !== num || num < Job.UNKNOWN || num > Job.Beginner) {
+    return Job.UNKNOWN
+  }
+  return num as Job
 }

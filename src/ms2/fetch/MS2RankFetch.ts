@@ -1,8 +1,9 @@
-import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, darkStreamPostfix, getRankFromElement, guildPvPPostfix, guildTrophyPostfix, MIN_QUERY_DATE, ms2BrowserHeader, parseCommaNumber, parseYMDString, postfixToURL, pvpPostfix, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, searchLatestPage, starArchitectPostfix, trophyPostfix } from "../util/MS2FetchUtil.ts"
+import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, darkStreamPostfix, getRankFromElement, guildPvPPostfix, guildTrophyPostfix, MIN_QUERY_DATE, ms2BrowserHeader, parseCommaNumber, parseYMDString, postfixToURL, pvpPostfix, queryCIDFromImageURL, queryLevelFromText, searchLatestPage, starArchitectPostfix, trophyPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2FormattedList } from "./MS2BaseFetch.ts"
 import type { BossClearedRankInfo, BossPartyInfo, BossPartyLeaderInfo, BossPartyMemberInfo, TrophyRankInfo } from "../struct/MS2RankInfo.ts"
 import type { DungeonId } from "../struct/MS2DungeonId.ts"
-import { JobCode, Job, type MainCharacterInfo } from "../struct/MS2CharInfo.ts"
+import type { MainCharacterInfo } from "../struct/MS2CharInfo.ts"
+import { JobCode, Job, parseJobFromIcon } from "../struct/MS2Job.ts"
 import { MS2PvPTier, MS2PvPTierKr } from "../struct/MS2PvPTier.ts"
 import { InvalidParameterError } from "./FetchError.ts"
 import { addMonths, isAfter, isBefore, startOfMonth, subMonths } from "date-fns"
@@ -121,7 +122,7 @@ export async function fetchBossClearedByDate(
     const imageURL = $leader.find(".name > img:nth-child(1)").attr("src") ?? ""
     const partyLeader: BossPartyLeaderInfo = {
       characterId: queryCIDFromImageURL(imageURL),
-      job: queryJobFromIcon($leader.find(".name > img:nth-child(2)").attr("src") ?? ""),
+      job: parseJobFromIcon($leader.find(".name > img:nth-child(2)").attr("src") ?? ""),
       nickname: $leader.find(".name").text().trim(),
       level: queryLevelFromText($leader.find(".info").text().trim()),
       profileURL: imageURL,
@@ -190,7 +191,7 @@ export async function fetchBossClearedRate(
     const rank = getRankFromElement($i)
 
     // parse character info
-    const job = queryJobFromIcon($i.find(".character > img:nth-child(2)").attr("src") ?? "")
+    const job = parseJobFromIcon($i.find(".character > img:nth-child(2)").attr("src") ?? "")
 
     let serverNickname = $i.find(".character").text().trim()
     if (serverNickname.length <= 0) {
@@ -232,7 +233,7 @@ export async function fetchBossPartyInfo(
     listSelector: "ul > li",
   }, ($i) => {
     return {
-      job: queryJobFromIcon($i.find(".icon > img").attr("src") ?? ""),
+      job: parseJobFromIcon($i.find(".icon > img").attr("src") ?? ""),
       nickname: $i.find(".name").text().trim(),
       level: queryLevelFromText($i.find(".info").text()),
     } satisfies BossPartyMemberInfo

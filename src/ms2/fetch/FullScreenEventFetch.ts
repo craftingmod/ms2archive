@@ -15,7 +15,7 @@ const archiveDir = "./data/fse"
 // 20220609 : svelte 스크립트 태그에 `defer` attribute 추가
 // 20191024: head에 <script>$(() => bg_effect())</script> 추가
 
-export async function fetchFullScreenEvent(url: string) {
+export async function fetchFullScreenEvent(url: string, idOverride: string | null = null) {
   if (!url.startsWith("https://maplestory2.nexon.com/")) {
     throw new Error("URL must start with maplestory2.nexon.com!")
   }
@@ -65,7 +65,7 @@ export async function fetchFullScreenEvent(url: string) {
   const bodyDivs = $("body > div").map((i: number, el: Element) => $(el).prop("outerHTML")).toArray()
 
   return {
-    eventId: `${eventIdNumeric}_${eventIdString}`,
+    eventId: (idOverride != null ? idOverride : `${eventIdNumeric}_${eventIdString}`),
     metaData: {
       favicon,
       title: metaTitle,
@@ -131,9 +131,9 @@ export class FSEFetcher {
 
   }
 
-  public async fetchFSE(url: string) {
+  public async fetchFSE(url: string, idOverride: string | null = null) {
     // 위 파싱된 데이터
-    const fseData = await fetchFullScreenEvent(url)
+    const fseData = await fetchFullScreenEvent(url, idOverride)
     // 이벤트 코드
     const eventId = fseData.eventId
 

@@ -91,6 +91,40 @@ export function parseTime(timeStr: string) {
 
   return parsedDate
 }
+/**
+ * 게시글의 `2024-11-17 오후 10시 30분`을 변환
+ * @param timeStr 
+ */
+export function parseDashTime(timeStr: string) {
+  const pivot = timeStr.indexOf(" ")
+
+  const ymdStr = timeStr.substring(0, pivot)
+  const [year, month, day] = ymdStr.split("-").map((v) => Number(v))
+
+  const postStr = timeStr.substring(pivot + 1)
+  
+  const isAM = postStr.indexOf("오전") >= 0
+  const isPM = postStr.indexOf("오후") >= 0
+  if (isAM === isPM) {
+    throw new Error("Date Parsing Error: No AM/PM")
+  }
+
+  const rawHour12 = extractNumber(postStr.match(/\d+시/)) ?? 12
+  const minute = extractNumber(postStr.match(/\d+분/)) ?? 0
+
+  const hour = parse12Hour(rawHour12) + (isAM ? 0 : 12)
+
+  const parsedDate = new TZDate(
+    year,
+    month - 1,
+    day,
+    hour,
+    minute,
+    Timezone,
+  )
+
+  return parsedDate
+}
 
 /**
  * 게시글의 `2024.11.17 23:05`를 파싱
@@ -127,6 +161,18 @@ export function joinOrNull(arr: string[] | undefined | null) {
 }
 
 export function parseLevel(levelstr: string) {
-  const level = extractNumber(levelstr.match(/Lv\.\d+/)) ?? -1
+  const level = extractNumber(levelstr.match(/LV\.\d+/i)) ?? -1
   return level
+}
+
+export function parseLevelWithName(fullstr: string) {
+  const trimStr = fullstr.trim()
+  const splitIndex = trimStr.indexOf(" ")
+  const levelPart = trimStr.substring(0, splitIndex)
+  const namePart = trimStr.substring(splitIndex + 1)
+  const level = parseLevel(levelPart)
+  return {
+    level,
+    name: namePart,
+  }
 }

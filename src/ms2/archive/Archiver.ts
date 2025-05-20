@@ -1,13 +1,13 @@
 import chalk from "chalk"
-import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts";
-import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, UnknownTime, writeImages, type ArticleHeader, type MS2Article } from "../fetch/ArticleFetch.ts";
+import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts"
+import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, UnknownTime, writeImages, type ArticleHeader, type MS2Article } from "../fetch/ArticleFetch.ts"
 import type { EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
-import { sleep } from "bun";
-import { fetchGuildRankList, fetchTrophyRankList } from "../fetch/MS2RankFetch.ts";
-import { Job, JobCode } from "../struct/MS2CharInfo.ts";
-import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../fetch/MS2RankFetch.ts";
-import { BaseArchiver } from "./BaseArchiver.ts";
+import { sleep } from "bun"
+import { fetchGuildRankList, fetchTrophyRankList } from "../fetch/MS2RankFetch.ts"
+import { Job, JobCode } from "../struct/MS2Job.ts"
+import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../fetch/MS2RankFetch.ts"
+import { BaseArchiver } from "./BaseArchiver.ts"
 
 const debug = Debug("ms2archive:Archiver")
 

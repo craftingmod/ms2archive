@@ -27,7 +27,7 @@ export class MS2Analyzer {
   protected readonly accountQueryBlacklist: Set<bigint> = new Set()
 
   public constructor(db: MS2Database, dungeonId: DungeonId = DungeonId.REVERSE_ZAKUM) {
-    this.ms2db = d
+    this.ms2db = db
     this.dungeonId = dungeonId
   }
   /**

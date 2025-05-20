@@ -7,15 +7,11 @@ import { Agent as HttpsAgent } from "node:https"
 import Debug from "debug"
 import { load as loadDOM, type Cheerio, type CheerioAPI } from "cheerio"
 import { ms2Domain, postfixToURL, validateTableTitle } from "../util/MS2FetchUtil.ts"
+import { maxRetry, ms2UserAgent, requestCooldown, retryCooldownSec } from "../../Config.ts"
 
 const verbose = Debug("ms2:verbose:ms2basefetch")
 const ms2HttpAgent = new HttpAgent({ keepAlive: true, maxSockets: 50 })
 const ms2HttpsAgent = new HttpsAgent({ keepAlive: true, maxSockets: 50 })
-
-const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-const cooldown = 300 // ms
-const retryCooldown = 3 // sec
-const maxRetry = 5
 
 /**
  * 가장 마지막 요청 시간
@@ -47,7 +43,7 @@ export async function fetchMS2(options: FetchMS2Options | string) {
 
   const optionsWithDefault: Required<FetchMS2Options> = {
     urlSearchParams: {},
-    userAgent,
+    userAgent: ms2UserAgent,
     headers: {},
     noRetry302: false,
     ...options,
@@ -58,8 +54,8 @@ export async function fetchMS2(options: FetchMS2Options | string) {
   // 요청 지연 (MS2 서버는 1초당 3번만 받음)
   const timeDelta = Date.now() - lastMS2FetchTime
   if (lastMS2FetchTime > 0) {
-    if (timeDelta < cooldown) {
-      await sleep(cooldown - timeDelta)
+    if (timeDelta < requestCooldown) {
+      await sleep(requestCooldown - timeDelta)
     }
   }
   const ctime = Date.now()
@@ -173,12 +169,12 @@ export async function fetchMS2(options: FetchMS2Options | string) {
 
       // 리트라이
 
-      verbose(`[MS2Fetch] Retrying after ${chalk.cyan(retryCooldown)
+      verbose(`[MS2Fetch] Retrying after ${chalk.cyan(retryCooldownSec)
         } sec... (${chalk.yellowBright(i + 1)
         }/${chalk.blueBright(maxRetry)
         })`)
 
-      await sleep(1000 * retryCooldown)
+      await sleep(1000 * retryCooldownSec)
     }
   } catch (error) {
     // got에서 HTTPError가 발생할 수 있으므로 instanceof로 체크
@@ -297,4 +293,3 @@ export async function fetchMS2FormattedList<T extends AllowedFormatTypes>(option
   })) ?? ([] as T[])
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
-

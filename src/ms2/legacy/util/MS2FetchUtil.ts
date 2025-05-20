@@ -45,6 +45,8 @@ export const profileURLPrefix = `https://ua-maplestory2.nexon.com/`
 const profileURLPrefixLong = `${profileURLPrefix}profile/`
 const jobIconURLPrefix = `https://ssl.nexon.com/S2/Game/maplestory2/MAVIEW/ranking/`
 
+export const MIN_QUERY_DATE = new Date(2015, 7, 1) // 2015/8/1
+
 /**
  * Binary search latest page by Gemini
  * @param queryFn query Function
@@ -406,7 +408,13 @@ export function validateTableTitle($: CheerioAPI, title: string) {
   ) {
     verbose(`Title: ${$(".table_info").text().trim()
       }`)
-    throw new WrongPageError(`Cannot find ${title} title.`)
+    throw new WrongPageError({
+      statusCode: 300,
+      statusMessage: "Wrong Route",
+      body: $.html(),
+      url: "",
+      customMessage: "Please check url by following error stack.",
+    })
   }
 }
 

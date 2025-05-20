@@ -49,7 +49,7 @@ export async function fetchCapsuleList(capsuleId: number) {
   }, ($) => {
     // Row 
     const trs = $(".p_item2 > tbody").find("tr").get()
-    const result: { [key in string]?: MS2CapsuleItem[] } = {}
+    const result: { [key in string]: MS2CapsuleItem[] } = {}
     let categoryName = "없음"
     for (const row of trs) {
       const $row = $(row)

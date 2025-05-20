@@ -1,6 +1,14 @@
 import { DungeonId, dungeonIdNameMap } from "./struct/MS2DungeonId.js"
-import type { CharacterInfo, CharacterMemberInfo, MainCharacterInfo, TrophyCharacterInfo } from "./struct/MS2CharInfo.js"
-import { fetchClearedByDate, fetchClearedRate, fetchMainCharacterByName, fetchMainCharacterByNameDate, fetchTrophyCount, MIN_QUERY_DATE, searchLatestClearedPage, shrinkProfileURL } from "./ms2fetch.js"
+import { type CharacterInfo, type MainCharacterInfo, type TrophyCharacterInfo } from "./struct/MS2CharInfo.js"
+import type { BossPartyMemberInfo } from "./struct/MS2RankInfo.ts"
+import {
+  fetchBossClearedByDate,
+  fetchBossClearedRate,
+  fetchTrophyRankList,
+  fetchBossClearedLastPage,
+  fetchMainCharacterByNicknameInRange, // 새로 추가된 헬퍼 함수
+} from "./fetch/MS2RankFetch.js"
+import { MIN_QUERY_DATE, shrinkProfileURL } from "./util/MS2FetchUtil.ts" // MIN_QUERY_DATE 및 shrinkProfileURL 경로 변경
 import Debug from "debug"
 import chalk from "chalk"
 import { MS2Database } from "./ms2database.js"
@@ -37,7 +45,7 @@ export class MS2Analyzer {
     // DB에 있는 마지막 페이지 불러오기
     const indexedPage = getPage(this.ms2db.queryLatestClearInfo(this.dungeonId)?.clearRank)
     // 가장 마지막 페이지 불러오기
-    const latestPage = await searchLatestClearedPage(this.dungeonId, indexedPage)
+    const latestPage = await fetchBossClearedLastPage(this.dungeonId, indexedPage)
     // 데이터 검증 및 수정
     if (indexedPage >= 2 && verify) {
       await this.verifyPages(1, indexedPage - 1)
@@ -120,7 +128,7 @@ export class MS2Analyzer {
     }
   }
   public async analyzePage(page: number) {
-    const pageParties = await fetchClearedByDate(this.dungeonId, page, true)
+    const pageParties = await fetchBossClearedByDate(this.dungeonId, page, true)
     pageParties.sort((a, b) => {
       return a.clearRank - b.clearRank
     })
@@ -188,7 +196,7 @@ export class MS2Analyzer {
    * @param member 파티원 정보
    * @returns CID
    */
-  protected async fetchMemberInfo(leader: CharacterInfo, member: CharacterMemberInfo, clearDate: Date): Promise<bigint> {
+  protected async fetchMemberInfo(leader: CharacterInfo, member: BossPartyMemberInfo, clearDate: Date): Promise<bigint> {
     const nowTime = Date.now()
     // 저번 달
     const prevDate = subMonths(nowTime, 1)
@@ -225,7 +233,16 @@ export class MS2Analyzer {
     // 업데이트가 필요한 정보
 
     // 트로피 정보 파싱
-    const fetchUser = await fetchTrophyCount(member.nickname)
+    const trophyRankList = await fetchTrophyRankList(1, member.nickname)
+    let fetchUser: TrophyCharacterInfo | null = null
+    if (trophyRankList.length > 0) {
+      const trophyEntry = trophyRankList[0];
+      fetchUser = {
+        ...trophyEntry, // characterId, nickname, trophyCount, trophyRank, profileURL
+        job: member.job, // 파티 멤버 정보의 직업 사용 또는 Job.UNKNOWN
+        level: member.level, // 파티 멤버 정보의 레벨 사용 또는 -1
+      };
+    }
 
     // 트로피 결과가 없으면 (무조건 "삭제")
     if (fetchUser == null) {
@@ -243,7 +260,7 @@ export class MS2Analyzer {
       }
       // 삭제된 유저가 데이터베이스에 없으면
       // 클경에서 닉네임 검색
-      const lostQuery = await fetchClearedRate(this.dungeonId, member.nickname)
+      const lostQuery = await fetchBossClearedRate(this.dungeonId, member.nickname)
       if (lostQuery.length <= 0) {
         // 흔적도 없이 사라짐
         debug(`[${chalk.blueBright(member.nickname)}] Not Found. skipping.`)
@@ -264,8 +281,8 @@ export class MS2Analyzer {
           this.ms2db.insertCharacterInfo({
             characterId: BigInt(lostCharacter.characterId),
             nickname: lostCharacter.nickname,
-            job: lostCharacter.job,
-            level: lostCharacter.level,
+            job: lostCharacter.job, // BossClearedRankInfo에는 level이 없을 수 있음, 필요시 member.level 사용
+            level: member.level,
             trophy: null,
             mainCharacterId: BigInt(0),
             accountId: BigInt(0),
@@ -288,7 +305,7 @@ export class MS2Analyzer {
         }
         // CID 마킹
         // 레벨과 직업이랑 닉네임이 같으면
-        if (lostCharacter.job === member.job && lostCharacter.level === member.level && lostCharacter.nickname === member.nickname) {
+        if (lostCharacter.job === member.job && lostCharacter.nickname === member.nickname) {
           // CID 정하기
           lostCID = lostCharacter.characterId
         }
@@ -405,7 +422,7 @@ export class MS2Analyzer {
         // starHouseDate가 없으면 처음부터 갱신
         if (dbTargetCharacter.starHouseDate == null) {
           // 파티 던전 일 부터 2015년 7월까지 계산
-          mainCharacterInfo = await fetchMainCharacterByName(
+          mainCharacterInfo = await fetchMainCharacterByNicknameInRange(
             charInfo.nickname,
             MIN_QUERY_DATE,
             clearDate,
@@ -413,7 +430,7 @@ export class MS2Analyzer {
           )
           if (mainCharacterInfo == null) {
             // 파티 던전 일부터 현재까지 계산
-            mainCharacterInfo = await fetchMainCharacterByName(
+            mainCharacterInfo = await fetchMainCharacterByNicknameInRange(
               charInfo.nickname,
               clearDate,
               currentDate,
@@ -423,7 +440,9 @@ export class MS2Analyzer {
         } else {
           // 있으면 날자 찝어서 갱신
           const searchDate = this.parseYYYYMM(dbTargetCharacter.starHouseDate)
-          mainCharacterInfo = await fetchMainCharacterByNameDate(charInfo.nickname, searchDate)
+          // fetchMainCharacterByNameDate는 단일 날짜 조회, fetchMainCharacterByNicknameInRange를 사용하거나
+          // fetchArchitectInfoByNicknameAndDateInternal 직접 사용
+          mainCharacterInfo = await fetchMainCharacterByNicknameInRange(charInfo.nickname, searchDate, searchDate, true)
         }
       } else {
         // 가장 마지막 갱신의 다음 달
@@ -432,7 +451,7 @@ export class MS2Analyzer {
         // DB의 하우징 검색 날자 다음 달부터 현재 일까지 불러옵니다
         // 미래가 아니라면
         if (!isFuture(startDate)) {
-          mainCharacterInfo = await fetchMainCharacterByName(charInfo.nickname, startDate, currentDate)
+          mainCharacterInfo = await fetchMainCharacterByNicknameInRange(charInfo.nickname, startDate, currentDate)
         } else {
           // 없음...
           mainCharacterInfo = null
@@ -441,7 +460,7 @@ export class MS2Analyzer {
     } else {
       // DB에 대상 캐릭터가 없을 때
       // 파티 던전 일 부터 2015년 7월까지 계산
-      mainCharacterInfo = await fetchMainCharacterByName(
+      mainCharacterInfo = await fetchMainCharacterByNicknameInRange(
         charInfo.nickname,
         MIN_QUERY_DATE,
         clearDate,
@@ -449,7 +468,7 @@ export class MS2Analyzer {
       )
       if (mainCharacterInfo == null) {
         // 파티 던전 일부터 현재까지 계산
-        mainCharacterInfo = await fetchMainCharacterByName(
+        mainCharacterInfo = await fetchMainCharacterByNicknameInRange(
           charInfo.nickname,
           clearDate,
           currentDate,
@@ -572,7 +591,7 @@ export class MS2Analyzer {
   protected is302Error(error: unknown) {
     if (error instanceof InternalServerError) {
       // Page Not found (some error)
-      if (error.statusCode === 302 && error.responseHTML.indexOf("Object moved") >= 0) {
+      if (error.statusCode === 302) {
         // Page not found
         return true
       }

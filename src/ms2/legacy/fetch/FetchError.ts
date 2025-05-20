@@ -41,6 +41,13 @@ export class FetchError extends Error implements FetchErrorInfo {
   }
 }
 
+export class UserError extends Error {
+  constructor(reason: string) {
+    super(`Runtime Error: ${reason}`)
+    this.name = "UserError"
+  }
+}
+
 export class InternalServerError extends FetchError {
   constructor(params: FetchErrorInfo) {
     super(params)
@@ -80,18 +87,25 @@ export class MS2TimeoutError extends FetchError {
   }
 }
 
-export class WrongPageError extends Error {
-  constructor(message: string) {
-    super(message)
+export class WrongPageError extends FetchError {
+  constructor(params: FetchErrorInfo) {
+    super(params)
     this.name = "WrongPageError"
   }
 }
 
-export class InvalidParameterError extends Error {
+export class InvalidParameterError extends UserError {
   public paramName: string
   constructor(message: string, paramName: string) {
-    super(message)
+    super(`${paramName} is invalid!`)
     this.name = "InvalidParameterError"
     this.paramName = paramName
+  }
+}
+
+export class DungeonNotFoundError extends UserError {
+  constructor(dungeon: string | number) {
+    super(`${dungeon} is not found!`)
+    this.name = "DungeonNotFoundError"
   }
 }

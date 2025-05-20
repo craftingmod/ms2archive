@@ -1,10 +1,11 @@
-import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, darkStreamPostfix, getRankFromElement, guildPvPPostfix, guildTrophyPostfix, ms2BrowserHeader, parseCommaNumber, parseYMDString, postfixToURL, pvpPostfix, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, searchLatestPage, starArchitectPostfix, trophyPostfix } from "../util/MS2FetchUtil.ts"
+import { bossClearedByDatePostfix, bossClearedByRatePostfix, bossClearedWithMemberPostfix, darkStreamPostfix, getRankFromElement, guildPvPPostfix, guildTrophyPostfix, MIN_QUERY_DATE, ms2BrowserHeader, parseCommaNumber, parseYMDString, postfixToURL, pvpPostfix, queryCIDFromImageURL, queryJobFromIcon, queryLevelFromText, searchLatestPage, starArchitectPostfix, trophyPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2FormattedList } from "./MS2BaseFetch.ts"
 import type { BossClearedRankInfo, BossPartyInfo, BossPartyLeaderInfo, BossPartyMemberInfo, TrophyRankInfo } from "../struct/MS2RankInfo.ts"
 import type { DungeonId } from "../struct/MS2DungeonId.ts"
-import { JobCode, Job } from "../struct/MS2CharInfo.ts"
+import { JobCode, Job, type MainCharacterInfo } from "../struct/MS2CharInfo.ts"
 import { MS2PvPTier, MS2PvPTierKr } from "../struct/MS2PvPTier.ts"
 import { InvalidParameterError } from "./FetchError.ts"
+import { addMonths, isAfter, isBefore, startOfMonth, subMonths } from "date-fns"
 
 export interface GuildRank {
   rank: number,
@@ -479,4 +480,75 @@ export async function fetchArchitectRankList(
     }
     return result
   })
+}
+
+/**
+ * 특정 닉네임과 날짜(년, 월)로 건축가 정보를 조회합니다.
+ * `ms2fetch.ts`의 `fetchMainCharacterByNameTime` 대체용.
+ */
+async function fetchArchitectInfoByNicknameAndDateInternal(
+  nickname: string,
+  year: number,
+  month: number
+): Promise<MainCharacterInfo | null> {
+  // Parameter validation (기존 ms2fetch.ts의 fetchMainCharacterByNameTime 로직 참고)
+  const currentDate = new Date()
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1
+
+  if (year < 2015 || (year === 2015 && month < 8)) {
+    // throw new InvalidParameterError("Date must be future than 2015/07", "year, month");
+    return null // 또는 오류 throw
+  }
+  if (year > currentYear || (year === currentYear && month > currentMonth)) {
+    // throw new InvalidParameterError("Date must be past than current date", "year, month");
+    return null // 또는 오류 throw
+  }
+
+  const architectList = await fetchArchitectRankList({ year, month }, 1, nickname)
+  // fetchArchitectRankList는 해당 닉네임으로 검색된 결과를 반환하므로, 첫번째 항목을 사용하거나,
+  // 정확히 닉네임이 일치하는 항목을 찾습니다. (현재 fetchArchitectRankList는 k=nickname으로 검색)
+  const foundEntry = architectList.find(entry => entry.nickname === nickname)
+
+  if (foundEntry) {
+    return {
+      job: Job.UNKNOWN, // 기존 로직과 동일하게 설정
+      level: -1,        // 기존 로직과 동일하게 설정
+      nickname: foundEntry.nickname,
+      characterId: foundEntry.characterId,
+      profileURL: foundEntry.profileURL,
+      mainCharacterId: foundEntry.characterId, // 기존 로직에서 mainCharacterId는 characterId와 동일했음
+      accountId: foundEntry.accountId,
+      houseName: foundEntry.houseName,
+      houseScore: foundEntry.houseScore,
+      houseRank: foundEntry.rank, // ArchitectRankInfo의 rank를 houseRank로 매핑
+      houseDate: year * 100 + month,
+    }
+  }
+  return null
+}
+
+/**
+ * 특정 기간 내에 닉네임으로 메인 캐릭터(건축가) 정보를 조회합니다.
+ * `ms2fetch.ts`의 `fetchMainCharacterByName` 및 `fetchMainCharacterByNameDate` 대체용.
+ */
+export async function fetchMainCharacterByNicknameInRange(
+  nickname: string,
+  startDateInput: Date,
+  endDateInput: Date,
+  isDesc: boolean = true
+): Promise<MainCharacterInfo | null> {
+  const startDate = startOfMonth(startDateInput < MIN_QUERY_DATE ? MIN_QUERY_DATE : startDateInput);
+  const endDate = startOfMonth(endDateInput)
+
+  let currentDate = new Date(isDesc ? endDate : startDate)
+
+  while (!isBefore(currentDate, startDate) && !isAfter(currentDate, endDate)) {
+    const mainChar = await fetchArchitectInfoByNicknameAndDateInternal(nickname, currentDate.getFullYear(), currentDate.getMonth() + 1)
+    if (mainChar) {
+      return mainChar
+    }
+    currentDate = isDesc ? subMonths(currentDate, 1) : addMonths(currentDate, 1)
+  }
+  return null
 }

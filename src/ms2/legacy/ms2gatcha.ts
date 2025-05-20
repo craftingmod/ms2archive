@@ -1,4 +1,4 @@
-import { fetchCapsuleList } from "./ms2fetch.js";
+import { fetchCapsuleList } from "./fetch/MS2SiteFetch.ts";
 
 export interface MS2CapsuleItem {
   itemName: string,
@@ -38,6 +38,9 @@ export class MS2CapsuleSimulator {
 
   public async loadTable(capsuleId: number) {
     const gatcha = await fetchCapsuleList(capsuleId)
+    if (gatcha == null) {
+      throw new Error("가챠 데이터 값이 없습니다.")
+    }
     if (gatcha["여자"] != null) {
       this.items.push(...gatcha["여자"])
     } else if (gatcha["없음"] != null) {

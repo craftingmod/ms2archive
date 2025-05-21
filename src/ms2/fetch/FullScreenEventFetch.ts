@@ -1,11 +1,13 @@
 import { load as loadDOM } from "cheerio"
 import type { Element } from "domhandler"
-import { extractNumber } from "../util/MS2ParseUtil.ts"
+import { extractNumber, parseSimpleTime } from "../util/MS2ParseUtil.ts"
 import Path from "node:path/posix"
 import Bun from "bun"
 import fs from "fs/promises"
 import { fetchBlob, fetchText } from "./GenericFetch.ts"
 import { fetchMS2Text } from "./MS2BaseFetch.ts"
+import { parseJobFromIcon } from "../struct/MS2Job.ts"
+import type { EventComment } from "../storage/ArchiveStorage.ts"
 
 type FullscreenEventData = Awaited<ReturnType<typeof fetchFullScreenEvent>>
 
@@ -377,4 +379,69 @@ export class FSEFetcher {
 </html>
     `
   }
+}
+
+
+export async function fetchEventComments(eventIndex: number, page = 1) {
+  const rawHTML = await fetchMS2Text(
+    `Events/_20190725/_PartialCommentList?pn=${page}&id=${eventIndex}&ls=30&bn=commentevents`
+  )
+
+  // 404
+  if (rawHTML == null) {
+    return null
+  }
+
+  const root$ = loadDOM(rawHTML)
+
+  const commentsDOM = root$("ul > li").toArray()
+
+  const eventComments = [] as EventComment[]
+
+  for (const singleDOM of commentsDOM) {
+    const $ = loadDOM(singleDOM)
+
+    const charImage = $(".char_img img").attr("src") ?? ""
+
+    let charId = -1n
+    let imagePath = ""
+    if (charImage.length > 0 && charImage.indexOf("/profile/") >= 0) {
+      const imagePart1 = charImage.substring(charImage.indexOf("/profile/") + 9)
+      const imagePart2 = imagePart1.split("/")
+      charId = BigInt(imagePart2[2])
+
+      const imageBlob = await fetchBlob(charImage)
+
+      if (imageBlob != null) {
+        imagePath = `data/images/fullevents/${eventIndex}/${charId}_${imagePart2[3]}`
+
+        await Bun.write(Path.resolve(imagePath), imageBlob.blob as unknown as Blob, {
+          createPath: true,
+        })
+      }
+    }
+
+    const charJob = parseJobFromIcon($(".char_info .job").attr("src") ?? "")
+
+    const charName = $(".char_info .nickname").text().trim()
+
+    const createdAt = parseSimpleTime(
+      $(".char_info .date").text().trim()
+    )
+
+    const content = $(".comment").text().trim()
+
+    eventComments.push({
+      eventIndex,
+      commentIndex: -1,
+      content,
+      authorId: charId,
+      authorName: charName,
+      authorJob: charJob,
+      authorThumb: charImage,
+      createdAt: createdAt.getTime(),
+    } satisfies EventComment)
+  }
+
+  return eventComments
 }

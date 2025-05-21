@@ -30,3 +30,4 @@ const fixer = new Fixer(storage)
 
 // await archiver.archivePvPS17()
 // await archiver.archivePvP()
+await archiver.archiveQnA()

@@ -3,6 +3,7 @@ import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts"
 import type { MS2Article } from "../fetch/ArticleFetch.ts"
 import { joinOrNull } from "../util/MS2ParseUtil.ts"
 import type { MS2Comment } from "../struct/MS2Comment.ts"
+import type { QnAArticle } from "../fetch/QnAFetch.ts"
 
 /**
  * 게시글 DB 테이블 구조
@@ -62,6 +63,7 @@ export class ArchiveStorage {
       this.createBoardTable(cat)
     }
     this.createEventCommentTable()
+    this.createQnATable()
   }
 
   protected createBoardTable(board: BoardCategory) {
@@ -92,6 +94,102 @@ export class ArchiveStorage {
       content TEXT NOT NULL,
       createdAt INTEGER NOT NULL
     )`).run()
+  }
+
+  protected createQnATable() {
+    this.database.query(`CREATE TABLE IF NOT EXISTS QnABoard (
+      articleId INTEGER PRIMARY KEY,
+      content TEXT NOT NULL,
+      authorName TEXT NOT NULL,
+      authorJob INTEGER,
+      authorLevel INTEGER,
+      createdAt INTEGER NOT NULL,
+      commentCount INTEGER NOT NULL,
+      tags TEXT
+    );`).run()
+
+    this.database.query(`CREATE TABLE IF NOT EXISTS QnAComment (
+      articleId INTEGER NOT NULL,
+      commentId INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      likes INTEGER NOT NULL,
+      authorName TEXT NOT NULL,
+      authorJob INTEGER,
+      authorLevel INTEGER,
+      createdAt INTEGER NOT NULL
+    );`).run()
+  }
+
+  public insertQnA(...articles: QnAArticle[]) {
+    const queryArticle = this.database.prepare(`INSERT OR REPLACE INTO QnABoard (
+      articleId,
+      content,
+      authorName,
+      authorJob,
+      authorLevel,
+      createdAt,
+      commentCount,
+      tags
+    ) VALUES (
+      $articleId,
+      $content,
+      $authorName,
+      $authorJob,
+      $authorLevel,
+      $createdAt,
+      $commentCount,
+      $tags
+    );`)
+
+    const queryComment = this.database.prepare(`INSERT INTO QnAComment (
+      articleId,
+      commentId,
+      content,
+      likes,
+      authorName,
+      authorJob,
+      authorLevel,
+      createdAt
+    ) VALUES (
+      $articleId,
+      $commentId,
+      $content,
+      $likes,
+      $authorName,
+      $authorJob,
+      $authorLevel,
+      $createdAt
+    );`)
+
+    const insertArticles = this.database.transaction((elements: QnAArticle[]) => {
+      for (const article of elements) {
+        queryArticle.run({
+          articleId: article.questionId,
+          content: article.question,
+          authorName: article.nickname,
+          authorJob: article.job,
+          authorLevel: article.level,
+          createdAt: article.timestamp.getTime(),
+          commentCount: article.answerCount,
+          tags: joinOrNull(article.tags),
+        })
+        for (const comment of article.answers) {
+          queryComment.run({
+            articleId: article.questionId,
+            commentId: comment.replyId,
+            content: comment.content,
+            likes: comment.replyLike,
+            authorName: comment.nickname,
+            authorJob: comment.job,
+            authorLevel: comment.level,
+            createdAt: comment.timestamp.getTime(),
+          })
+        }
+      }
+      return elements.length
+    })
+
+    insertArticles(articles)
   }
 
   protected createEventCommentTable() {

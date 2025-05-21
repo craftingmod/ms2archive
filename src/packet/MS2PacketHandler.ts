@@ -171,16 +171,30 @@ export class MS2PacketHandler {
       modifyPacket = makeChatPacket(decrpytedPacket, modifyText, this.isKMS2)
     } else if (opcode === instrumentOpcode) {
       const trophyRanks = this.rootInstance.trophyRanks
+
+      const reqTime = this.rootInstance.requestedCharTime
+      const isTimeover = (reqTime > 0) && (Date.now() - this.rootInstance.requestedCharTime) >= 5000
+
+      if (isTimeover) {
+        // 다음 순서로
+        Info(`[CID] cid request ${
+          this.rootInstance.trophyRanks[this.rootInstance.requestIndex]
+        } is timed over!`)
+        this.rootInstance.requestIndex += 1
+        this.rootInstance.requestedCharTime = -1
+      }
+
       const trophyIndex = this.rootInstance.requestIndex
+
       if (
-        trophyIndex < trophyRanks.length &&
-        (Date.now() - this.rootInstance.requestedCharTime) >= 1000
+        trophyIndex < trophyRanks.length
       ) {
         // 인덱스가 적은 경우에만 조회
         const cid = trophyRanks[trophyIndex].characterId
         modifyPacket = makeSearchCharPacket(decrpytedPacket, cid)
-        
-        this.rootInstance.requestedCharTime = Date.now()
+        if (this.rootInstance.requestedCharTime < 0) {
+          this.rootInstance.requestedCharTime = Date.now()
+        }
       }
 
     } else if (opcode === 0x001E) {

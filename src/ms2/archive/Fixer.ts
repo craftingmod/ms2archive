@@ -1,9 +1,10 @@
-import { fetchArticle, fetchShopItemList, writeImages } from "../fetch/ArticleFetch.ts"
+import { fetchArticle, fetchShopItemList } from "../fetch/ArticleFetch.ts"
 import type { BoardCategory } from "../fetch/BoardRoute"
 import { fetchArchitectRankList } from "../fetch/MS2RankFetch.ts"
 import type { ArchiveStorage } from "../storage/ArchiveStorage.ts"
 import fs from "node:fs/promises"
 import { Database } from "bun:sqlite"
+import { writeArticleImages } from "../util/MS2ArticleUtil.ts"
 
 export class Fixer {
   public constructor(
@@ -29,7 +30,7 @@ export class Fixer {
         force: true,
         recursive: true,
       })
-      const images = await writeImages(fetchedArticle)
+      const images = await writeArticleImages(fetchedArticle)
       for (let i = 0; i < images.length; i += 1) {
         const image = images[i]
         if (image == null) {

@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import { BoardCategory, BoardRoute } from "../fetch/BoardRoute.ts"
-import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, UnknownTime, writeImages, type ArticleHeader, type MS2Article } from "../fetch/ArticleFetch.ts"
+import { fetchArticle, fetchArticleList, fetchLatestArticleId, UnknownTime, type ArticleHeader, type MS2Article } from "../fetch/ArticleFetch.ts"
 import type { EventComment } from "../storage/ArchiveStorage.ts"
 import Debug from "debug"
 import { sleep } from "bun"
@@ -8,6 +8,9 @@ import { fetchGuildRankList, fetchTrophyRankList } from "../fetch/MS2RankFetch.t
 import { Job, JobCode } from "../struct/MS2Job.ts"
 import { fetchArchitectRankList, fetchDarkStreamRankList, fetchGuildPvPRankList, fetchPvPLastPage, fetchPvPRankList } from "../fetch/MS2RankFetch.ts"
 import { BaseArchiver } from "./BaseArchiver.ts"
+import { fetchPlayQnA } from "../fetch/QnAFetch.ts"
+import { fetchEventComments } from "../fetch/FullScreenEventFetch.ts"
+import { writeArticleImages } from "../util/MS2ArticleUtil.ts"
 
 const debug = Debug("ms2archive:Archiver")
 
@@ -397,9 +400,23 @@ export class Archiver extends BaseArchiver {
     }
   }
 
+  public async archiveQnA() {
+    for (let page = 1097; true; page += 1) {
+      debug(`Parsing QnA page: ${page}...`)
+      const parsedQnA = await fetchPlayQnA(page)
+      if (parsedQnA == null) {
+        throw new Error("Page parsing error!")
+      }
+      this.storage.insertQnA(...parsedQnA)
+      if (parsedQnA.length <= 0) {
+        return
+      }
+    }
+  }
+
   protected async insertArticle(board: BoardCategory, article: MS2Article) {
     // 이미지 저장
-    const images = await writeImages(article)
+    const images = await writeArticleImages(article)
 
     // content 치환
     for (let k = 0; k < images.length; k += 1) {

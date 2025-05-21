@@ -2,12 +2,13 @@ import { readdir } from "node:fs/promises"
 import Bun, { sleep } from "bun"
 import Path from "node:path"
 import { WorkerHelper } from "../worker/WorkerHelper.ts"
-import { fetchArticle, writeImages } from "../ms2/fetch/ArticleFetch.ts"
+import { fetchArticle } from "../ms2/fetch/ArticleFetch.ts"
 import type { BoardCategory } from "../ms2/fetch/BoardRoute.ts"
 import * as Bmp from "bmp-ts"
 import sharp from "sharp"
 import fs from "fs/promises"
 import { fileURLToPath } from "node:url"
+import { writeArticleImages } from "../ms2/util/MS2ArticleUtil.ts"
 
 const brokenAvif = fileURLToPath(
   import.meta.resolve("../../res/broken.avif")
@@ -162,7 +163,7 @@ export async function fixInvalidImages() {
       continue
     }
 
-    await writeImages(article)
+    await writeArticleImages(article)
   }
 }
 

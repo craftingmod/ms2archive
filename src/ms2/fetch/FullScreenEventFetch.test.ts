@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { fetchFullScreenEvent, FSEFetcher, relative } from "./FullScreenEventFetch.ts"
+import { fetchEventComments, fetchFullScreenEvent, FSEFetcher, relative } from "./FullScreenEventFetch.ts"
 
 test("Basic Test", async () => {
   const fetch = await fetchFullScreenEvent(
@@ -28,3 +28,11 @@ test.skip("상대 경로 테스트", async () => {
   console.log(testPath)
   expect(testPath).toBe("res/common/sideBar.css")
 })
+
+test.skip("전체화면 이벤트 댓글 파싱", async () => {
+  const comments = await fetchEventComments(1, 100)
+
+  console.log(comments)
+
+  expect(comments).toBeArrayOfSize(30)
+}, 60000)

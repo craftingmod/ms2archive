@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { fetchArticle, fetchArticleList, fetchEventComments, fetchLatestArticleId, fetchPlayQnA } from "./ArticleFetch.ts"
+import { fetchArticle, fetchArticleList, fetchLatestArticleId } from "./ArticleFetch.ts"
 import { BoardCategory } from "./BoardRoute.ts"
 import { Job, parseJobFromIcon } from "../struct/MS2Job.ts"
 import fs from "node:fs/promises"
@@ -147,23 +147,6 @@ test.skip("없는 게시글 처리", async () => {
     999999,
   )
   expect(noArticle).toBeNull()
-})
-
-test.skip("전체화면 이벤트 댓글 파싱", async () => {
-  const comments = await fetchEventComments(1, 100)
-
-  console.log(comments)
-
-  expect(comments).toBeArrayOfSize(30)
-}, 60000)
-
-test("QnA 페이지 파싱 테스트", async () => {
-  const qnaPage = await fetchPlayQnA(5)
-  if (qnaPage != null) {
-    console.log(JSON.stringify(qnaPage, null, 2))
-  }
-
-  expect(qnaPage.length).toBe(10)
 })
 
 test("직업 구별 테스트", () => {

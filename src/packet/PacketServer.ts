@@ -33,13 +33,17 @@ export class PacketServer {
 
     const storeCids = new Set(charDB.getCids())
 
+    const storeMaxTrophy = charDB.getMaxRank()
+
     const trophyRanks = loadTrophyRanks()
 
-    const trophyCids = trophyRanks.filter((value) => storeCids.has(value.characterId))
+    const trophyCids = trophyRanks.filter((value) => (!storeCids.has(value.characterId) && value.trophyRank > storeMaxTrophy))
 
     this.packetHandlerMap = new PacketHandlerMap(
       trophyCids, 
     )
+
+    Verbose(trophyCids.length)
 
     charDB.close()
   }

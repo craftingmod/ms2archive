@@ -209,32 +209,56 @@ export class Archiver extends BaseArchiver {
    * 특정 Category의 게시판을 아카이빙 합니다.
    * @param board 
    */
-  public async archiveBoard(board: BoardCategory) {
+  public async archiveBoard(board: BoardCategory, parseToRecent = false) {
     if (BoardRoute[board].listAsThumb ?? false) {
       await this.archiveThumbList(board)
       return
     }
-
-    const lastArticleId =
-      this.storage.getLowestArticleId(board) ?? (await fetchLatestArticleId(board, true))
+    let lastArticleId: number | null = null
+    if (parseToRecent) {
+      lastArticleId = this.storage.getHighestArticleId(board) ?? 1
+    } else {
+      lastArticleId = this.storage.getLowestArticleId(board) ?? (await fetchLatestArticleId(board, true))
+    }
     if (lastArticleId == null) {
       throw new Error("Last article parsing failed!")
     }
     debug(`Start articleId: ${chalk.yellow(lastArticleId)}`)
 
-    for (let i = lastArticleId - 1; i >= 1; i -= 1) {
-
-      // 게시글 파싱
-      const article = await fetchArticle(board, i)
-
-      debug(`Archiving ${chalk.yellow(i)}... (${chalk.green(lastArticleId - i - 1)} done. ${article == null ? chalk.red("Not Found") : chalk.green("Exist")})`)
-
-      if (article == null) {
-        continue
+    if (parseToRecent) {
+      const nowArticleIdList = await fetchArticleList(board, 1) ?? []
+      if (nowArticleIdList.length <= 0) {
+        throw new Error("First article ID parsing failed!")
       }
 
-      this.insertArticle(board, article)
+      const nowArticleId = nowArticleIdList[0].articleId
+      for (let i = lastArticleId + 1; i <= nowArticleId; i += 1) {
+        await this.archiveBoardOne(board, i, nowArticleId - i)
+      }
+    } else {
+      for (let i = lastArticleId - 1; i >= 1; i -= 1) {
+        await this.archiveBoardOne(board, i, i)
+      }
     }
+  }
+
+  protected async archiveBoardOne(board: BoardCategory, articleId: number, count?: number) {
+    // 게시글 파싱
+    const article = await fetchArticle(board, articleId)
+
+    debug(`Archiving ${
+      chalk.yellow(articleId)
+    }... (${
+      chalk.green(count ?? -1)
+    } left. ${
+      article == null ? chalk.red("Not Found") : chalk.green("Exist")
+    })`)
+
+    if (article == null) {
+      return
+    }
+
+    this.insertArticle(board, article)
   }
 
   /**

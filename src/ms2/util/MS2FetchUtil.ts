@@ -2,7 +2,8 @@ import type { Cheerio, CheerioAPI } from "cheerio"
 import { MS2ItemTier, MS2Tradable } from "../struct/MS2Gatcha.ts"
 import Debug from "debug"
 import type { Element } from "domhandler"
-import { WrongPageError } from "../fetch/FetchError.ts"
+import { InvalidParameterError, WrongPageError } from "../fetch/FetchError.ts"
+import { baseURL } from "../Config.ts"
 
 const verbose = Debug("ms2:verbose:ms2fetchutil")
 
@@ -328,6 +329,31 @@ export function queryLevelFromText(lvtext: string) {
     return Number.parseInt(lvtext.substring(3))
   } else {
     return -1
+  }
+}
+
+export function getParamFromURL(postfixOrURL: string) {
+
+  if (postfixOrURL.startsWith("http") && !postfixOrURL.startsWith(baseURL)) {
+    throw new InvalidParameterError(`URL should be started with ${baseURL}!`, "postfixOrURL")
+  }
+
+  let url = postfixOrURL
+  if (!url.startsWith("http")) {
+    url = postfixToURL(postfixOrURL)
+  }
+  const urlObj = new URL(url)
+  const searchParams = Object.fromEntries(urlObj.searchParams.entries())
+
+  const postfix = url.substring(baseURL.length + 1)
+  const urlWithoutParams = urlObj.origin + urlObj.pathname;
+
+
+  return {
+    postfix,
+    url,
+    urlWithoutParams,
+    searchParams,
   }
 }
 

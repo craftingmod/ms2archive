@@ -39,6 +39,10 @@ export enum BoardCategory {
    * 이벤트
    */
   Events = "Events",
+  /**
+   * 당첨자 발표
+   */
+  EventsResultView = "EventsResultView",
 }
 
 interface RequestData {
@@ -137,5 +141,11 @@ export const BoardRoute:Record<BoardCategory, RequestData> = {
     cleanupDOM: false,
     listAsThumb: true,
     useSummary: true,
+  },
+  [BoardCategory.EventsResultView]: {
+    ...boardDefault("EventsResult", 6),
+    listRoute: (page) => `News/EventsResult?pn=${page}`,
+    detailRoute: (articleId) => `News/EventsResultView?sn=${articleId}`,
+    cleanupDOM: false,
   }
 }

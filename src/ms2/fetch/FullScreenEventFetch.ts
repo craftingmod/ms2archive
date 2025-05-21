@@ -129,11 +129,21 @@ export class FSEFetcher {
    */
   protected resMap = new Map<string, string>()
 
-  public constructor() {
+  protected commonName: string | null = "common"
+
+  private readonly fetchOver = true
+  private readonly useExist = true
+
+  public constructor(
+    protected forceCommon = false,
+  ) {
 
   }
 
-  public async fetchFSE(url: string, idOverride: string | null = null) {
+  public async fetchFSE(url: string, idOverride: string | null = null, commonOverride?:string) {
+    if (commonOverride !== undefined) {
+      this.commonName = commonOverride
+    }
     // 위 파싱된 데이터
     const fseData = await fetchFullScreenEvent(url, idOverride)
     // 이벤트 코드
@@ -195,9 +205,19 @@ export class FSEFetcher {
 
     this.fseList.push(fseData)
 
-    await Bun.write(
-      Path.resolve(archiveDir, `${eventId}.html`), this.buildHTML(fseData)
+    await this.writeFile(
+      Path.resolve(archiveDir, `${eventId}.html`),
+      this.buildHTML(fseData)
     )
+  }
+
+  protected async writeFile(path: string, input: Blob | string | Uint8Array) {
+    if (this.useExist && await fs.exists(path)) {
+      return 0
+    }
+    return Bun.write(path, input, {
+      createPath: true,
+    })
   }
 
   protected async toLocalTextResource(resArr: string[], eventId: string, skipImageCheck: boolean) {
@@ -230,9 +250,7 @@ export class FSEFetcher {
 
     // js면 스킵
     if (skipImageCheck) {
-      await Bun.write(localPath, content, {
-        createPath: true,
-      })
+      await this.writeFile(localPath,content)
       this.resMap.set(url, localPath)
       return localPath
     }
@@ -250,9 +268,8 @@ export class FSEFetcher {
     }
 
     // css 저장
-    await Bun.write(localPath, content, {
-      createPath: true,
-    })
+    await this.writeFile(localPath, content)
+
     this.resMap.set(url, localPath)
     return localPath
   }
@@ -284,6 +301,16 @@ export class FSEFetcher {
       }
     }
 
+    // over도 하드코딩
+    if (this.fetchOver && url.indexOf(".png") >= 0) {
+      try {
+        await this.fetchResourceInternal(url.replace(".png", "_over.png"), eventId)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+
     return localPath
   }
 
@@ -302,9 +329,10 @@ export class FSEFetcher {
 
     const localPath = await this.getLocalPathSafety(url, eventId, Bun.hash(await resource.blob.arrayBuffer()))
 
-    await Bun.write(localPath, resource.blob as unknown as Blob, {
-      createPath: true,
-    })
+    await this.writeFile(
+      localPath,
+      resource.blob as unknown as Blob,
+    )
 
     this.resMap.set(url, localPath)
 
@@ -312,7 +340,10 @@ export class FSEFetcher {
   }
 
   protected getLocalPath(url: string, eventId: string, hash: bigint | number) {
-    const isCommonRes = isCommonResources(url)
+    if (url.indexOf("?") >= 0) {
+      url = url.substring(0, url.indexOf("?"))
+    }
+    const isCommonRes = (this.commonName != null) && (isCommonResources(url) || this.forceCommon)
     const divide2byte = (typeof hash === "bigint") ? Number(hash % 65536n) : (hash % 65536)
     const hexPostfix = divide2byte.toString(16).toUpperCase().padStart(4, "0")
     const filenameExt = url.substring(url.lastIndexOf("/") + 1)
@@ -324,7 +355,7 @@ export class FSEFetcher {
     const localPath = [
       archiveDir,
       "res",
-      isCommonRes ? "common" : String(eventId),
+      isCommonRes ? (this.commonName ?? "common") : String(eventId),
     ]
 
 
@@ -337,7 +368,7 @@ export class FSEFetcher {
 
   protected async getLocalPathSafety(url: string, eventId: string, hash: bigint | number) {
     const { localPath, hashedPath } = this.getLocalPath(url, eventId, hash)
-    if (await fs.exists(localPath)) {
+    if (!this.useExist && (await fs.exists(localPath))) {
       return hashedPath
     }
     return localPath

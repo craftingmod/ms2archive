@@ -329,14 +329,23 @@ export class ArchiveStorage {
 
   public getLowestArticleId(board: BoardCategory) {
 
-    const query = this.database.query(`SELECT articleId FROM ${board}Board
-      ORDER BY articleId`).get() as {articleId: bigint} | undefined
+    const query = this.database.query(`SELECT MIN(articleId) AS lowestArticleId FROM ${board}Board`).get() as {lowestArticleId: bigint} | undefined
 
     if (query == null) {
       return null
     }
 
-    return Number(query.articleId)
+    return Number(query.lowestArticleId)
+  }
+
+  public getHighestArticleId(board: BoardCategory) {
+    const query = this.database.query(`SELECT MAX(articleId) AS highestArticleId FROM ${board}Board`).get() as {highestArticleId: bigint} | undefined
+
+    if (query == null) {
+      return null
+    }
+
+    return Number(query.highestArticleId)
   }
 
 }

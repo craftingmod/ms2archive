@@ -6,7 +6,7 @@ import { Agent as HttpsAgent } from "node:https"
 import type { Element } from "domhandler"
 import Debug from "debug"
 import { load as loadDOM, type Cheerio, type CheerioAPI } from "cheerio"
-import { ms2Domain, postfixToURL, validateTableTitle } from "../util/MS2FetchUtil.ts"
+import { getParamFromURL, ms2Domain, postfixToURL, validateTableTitle } from "../util/MS2FetchUtil.ts"
 import { maxRetry, ms2UserAgent, requestCooldown, retryCooldownSec } from "../Config.ts"
 import { sleep } from "bun"
 
@@ -39,7 +39,11 @@ export interface FetchMS2Options {
  */
 export async function fetchMS2(options: FetchMS2Options | string) {
   if (typeof options === "string") {
-    options = { postfix: options }
+    const parsedOptions = getParamFromURL(options)
+    options = {
+      postfix: parsedOptions.postfix,
+      urlSearchParams: parsedOptions.searchParams,
+    }
   }
 
   const optionsWithDefault: Required<FetchMS2Options> = {
@@ -128,8 +132,7 @@ export async function fetchMS2(options: FetchMS2Options | string) {
 
       // 응답이 302 & NotFound로 이동이 아닌 경우 -> 모르는 오류로 처리
       if (
-        statusCode !== 302 ||
-        body.indexOf("Object moved") <= 0
+        statusCode !== 302 || body.indexOf("Object moved") <= 0
       ) {
         throw new FetchError({
           ...fetchErrorInfo,
@@ -150,8 +153,9 @@ export async function fetchMS2(options: FetchMS2Options | string) {
         })
       }
 
-      // aspxerrorpath가 있거나 Main/NotFound로 안 끝나면 404로 처리
-      if (movedTo.indexOf("aspxerrorpath") >= 0 || movedTo.trim() !== "/Main/NotFound") {
+      // aspxerrorpath가 있거나 ~~Main/NotFound가 없으면 404로 처리~~
+      // || !body.includes( "/Main/NotFound")
+      if (movedTo.indexOf("aspxerrorpath") >= 0) {
         throw new NotFoundError({
           ...fetchErrorInfo,
           customMessage: `URL Resource was not found!`,
@@ -222,9 +226,17 @@ export async function fetchMS2(options: FetchMS2Options | string) {
 /**
  * 레거시용
  */
-export async function fetchMS2Text(url: string) {
-  const response = await fetchMS2(url)
-  return response.body
+export async function fetchMS2Text(postfixOrURL: string) {
+  try {
+    const response = await fetchMS2(postfixOrURL)
+    return response.body
+  } catch (err) {
+    if (err instanceof FetchError) {
+      verbose(`[MS2Fetch] fetch error: ${err}`)
+      return null
+    }
+  }
+  return null
 }
 
 /**

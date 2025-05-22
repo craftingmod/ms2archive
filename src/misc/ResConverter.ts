@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises"
 import Bun, { sleep } from "bun"
 import Path from "node:path"
-import { WorkerHelper } from "../worker/WorkerHelper.ts"
+import { WorkerHelperLegacy } from "../worker/WorkerHelper.ts"
 import { fetchArticle } from "../ms2/fetch/ArticleFetch.ts"
 import type { BoardCategory } from "../ms2/fetch/BoardRoute.ts"
 import * as Bmp from "bmp-ts"
@@ -170,7 +170,7 @@ export async function fixInvalidImages() {
 export async function convertToAVIF(sourcePaths: RelPath, destBasePath: string) {
   const { basePath, relPaths } = await readDirStat(sourcePaths)
 
-  const worker = new WorkerHelper<{source: string, dest: string}, string>(
+  const worker = new WorkerHelperLegacy<{source: string, dest: string}, string>(
     new URL("./ImageWorker.ts", import.meta.url) as URL,
     8,
   )

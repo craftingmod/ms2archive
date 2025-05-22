@@ -443,6 +443,16 @@ export function shrinkProfileURL(url: string) {
   }
 }
 
+export function getProfileId(profileURL: string) {
+  if (profileURL.startsWith(profileURLPrefixLong)) {
+    const profileIdStr = profileURL.substring(profileURL.lastIndexOf("/") + 1, profileURL.lastIndexOf("."))
+    
+    return BigInt(profileIdStr)
+  } else {
+    console.log(profileURL)
+  }
+}
+
 /**
  * Parse `2020년 01월 01일` to `20200101`
  * @param ymdString yyyymmdd string

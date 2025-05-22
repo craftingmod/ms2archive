@@ -9,7 +9,7 @@ export type WorkerInput<I> = {
   data: I,
 }
 
-export class WorkerHelper<I, O> {
+export class WorkerHelperLegacy<I, O> {
   public readonly workers: Worker[]
   public onCompleteOne?: (value: O | null, done: number) => unknown
 
@@ -78,7 +78,7 @@ export class WorkerHelper<I, O> {
     }
     this.completeCount += 1
 
-    if (data.workIndex >= this.inputs.length - 1) {
+    if (this.completeCount >= this.inputs.length - 1) {
       this.res?.(this.outputs)
       return
     }
@@ -104,7 +104,7 @@ export class WorkerHelper<I, O> {
   }
 }
 
-export class SimpleWorkerHelper<I> {
+export class SmallWorkerHelper<I> {
   public readonly workers: Worker[]
   protected workerIndex = 0
 
@@ -113,8 +113,13 @@ export class SimpleWorkerHelper<I> {
     protected threads: number,
   ) {
     this.workers = new Array(this.threads)
+
+    if (typeof scriptURL === "string") {
+      this.scriptURL = new URL(scriptURL, import.meta.url)
+    }
+
     for (let i = 0; i < this.threads; i += 1) {
-      const worker = new Worker(scriptURL, {
+      const worker = new Worker(this.scriptURL, {
         type: "module",
       })
       this.workers[i] = worker
@@ -135,6 +140,127 @@ export class SimpleWorkerHelper<I> {
       } satisfies WorkerInput<I>)
       this.workerIndex += 1
     }
+  }
+
+  public close() {
+    for (const worker of this.workers) {
+      worker.terminate()
+    }
+  }
+}
+
+export class LargeWorkerHelper<I, O> {
+
+  public readonly workers: Worker[]
+
+  public onError: ((err: string, input: I) => Promise<void> | void) | null = null
+  public onResult: ((result: O, input: I, inputIndex: number) => Promise<void> | void) | null = null
+  public onDone: (() => Promise<void> | void) | null = null
+
+  protected workIndex = 0
+  protected outputCounts = 0
+
+  protected inputArray = new Array<I>()
+  protected outputArray = new Array<O | null>()
+
+  public constructor(
+    protected scriptURL: URL | string,
+    protected readonly threads: number,
+  ) {
+    this.workers = new Array(this.threads)
+
+    if (typeof scriptURL === "string") {
+      this.scriptURL = new URL(scriptURL, import.meta.url)
+    }
+
+    for (let i = 0; i < this.threads; i += 1) {
+      const worker = new Worker(this.scriptURL, {
+        type: "module",
+      })
+      this.workers[i] = worker
+    }
+
+    for (let i = 0; i < this.threads; i += 1) {
+      const worker = this.workers[i]
+      worker.onmessage = (ev) => this.handleWorkerMessage(ev, worker)
+    }
+  }
+
+
+
+  public request(inputs: I[]) {
+    if (inputs.length <= 0) {
+      return
+    }
+    this.inputArray = [...inputs]
+    this.outputArray = new Array(inputs.length)
+
+    this.workIndex = 0
+    this.outputCounts = 0
+
+    const firstLength = Math.min(inputs.length, this.threads)
+    
+    for (let i = 0; i < firstLength; i += 1) {
+      const worker = this.workers[i]
+
+      this.sendTask(worker)
+      this.workIndex += 1
+    }
+  }
+
+  protected async handleWorkerMessage(ev: MessageEvent<WorkerReturn<O>>, worker: Worker) {
+    const { result, workIndex, error } = ev.data
+
+    this.outputArray[this.outputCounts] = result
+    this.outputCounts += 1
+
+    if (this.outputCounts >= this.inputArray.length) {
+      await this.onDone?.()
+      this.close()
+      return
+    }
+
+    const messageInput = this.inputArray[workIndex]
+
+    if (error != null) {
+      await this.onError?.(error as string, messageInput)
+    } else {
+      await this.onResult?.(result, messageInput, workIndex)
+    }
+
+    if (this.workIndex < this.inputArray.length) {
+      // next message
+      this.sendTask(worker)
+      this.workIndex += 1
+    }
+
+  }
+
+  public static handleOnMessage<I, O>(func: (input: I) => O | Promise<O>) {
+    return (async (ev: Bun.BunMessageEvent) => {
+      const { data, workIndex } = ev.data as WorkerInput<I>
+      let errorStr = null as string | null
+      let result = null as O | null
+
+      try {
+        result = await func(data)
+      } catch (err) {
+        errorStr = String(err)
+      } finally {
+        postMessage({
+          result,
+          workIndex,
+          error: errorStr,
+        } satisfies WorkerReturn<O | null>)
+      }
+    })
+  }
+
+  protected sendTask(worker: Worker) {
+    worker.postMessage({
+      data: this.inputArray[this.workIndex],
+      workIndex: this.workIndex,
+    } satisfies WorkerInput<I>)
   }
 
   public close() {

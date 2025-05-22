@@ -66,8 +66,9 @@ export class CharacterInfoDB {
 
   public getCids() {
     const exec = this.database.prepare(
-      `SELECT characterId FROM characterStore;`
-    ).all() as Array<{characterId: bigint}>
+      `SELECT characterId, trophyRank FROM characterStore
+      ORDER BY trophyRank ASC;`
+    ).all() as Array<{characterId: bigint, trophyRank: bigint}>
     return exec.map((cidInfo) => cidInfo.characterId)
   }
 

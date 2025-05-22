@@ -4,14 +4,14 @@ import { decodeCharacterInfoPacket, extractUgcItemLook } from "../packet/definti
 import { CustomReader } from "../packet/defintion/CustomReader.ts"
 import Debug from "debug"
 import fs from "node:fs/promises"
-import { SimpleWorkerHelper } from "../worker/WorkerHelper.ts"
+import { SmallWorkerHelper } from "../worker/WorkerHelper.ts"
 import type { M2UMessage } from "../worker/M2UWorker.ts"
 import { sleep } from "bun"
 import { fetchBlob } from "../ms2/fetch/GenericFetch.ts"
 
 const Verbose = Debug("ms2archive:verbose:ugc")
 
-const workerFactory = new SimpleWorkerHelper<M2UMessage>(
+const workerFactory = new SmallWorkerHelper<M2UMessage>(
   new URL("../worker/M2UWorker.ts", import.meta.url),
   9
 )

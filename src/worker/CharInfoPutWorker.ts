@@ -1,5 +1,5 @@
 import { ByteReader } from "ms2packet.ts"
-import { CharacterInfoDB } from "../packet/database/CharacterInfoDB.ts"
+import { CharacterInfoDB } from "../ms2/storage/CharacterInfoDB.ts"
 import { loadTrophyRanks } from "../packet/database/TrophyRankLoader.ts"
 import { readCharInfo } from "../packet/defintion/internal/CharInfo.ts"
 import Debug from "debug"

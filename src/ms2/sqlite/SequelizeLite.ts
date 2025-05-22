@@ -30,11 +30,17 @@ const DATA_TYPE_SCHEMA_PROPERTIES: Record<DataTypesLite, { baseSqlType: string; 
 
 export class SequelizeLite {
   public database: Database
-  public constructor(protected path: string) {
+  public constructor(
+    protected readonly path: string,
+    protected readonly useWAL = false,
+  ) {
     this.database = new sqlite3(path, {
       create: true,
       safeIntegers: true,
     })
+    if (useWAL) {
+      this.database.exec("PRAGMA journal_mode = WAL;")
+    }
   }
   public define<T extends ModelDefinition>(tableName: string, modelDef: T, additionalDef: Partial<ModelToAdditional<T>> = {}) {
     const model = new ModelLite<T>(this.database, tableName, modelDef, additionalDef)

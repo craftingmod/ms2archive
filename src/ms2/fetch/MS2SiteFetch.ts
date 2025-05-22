@@ -4,6 +4,9 @@ import { MS2ItemTier, MS2Tradable, type MS2CapsuleItem } from "../struct/MS2Gatc
 import { gatchaPostfix, getTierFromText, getTradableFromText, guestbookPostfix, ms2BrowserHeader, postfixToURL, worldChatPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2, fetchMS2Formatted } from "./MS2BaseFetch.ts"
 import { parseJobFromIcon } from "../struct/MS2Job.ts"
+import { InvalidParameterError } from "./FetchError.ts"
+import { TZDate } from "@date-fns/tz"
+import { Timezone } from "../Config.ts"
 
 /**
  * 월드 채팅을 파싱합니다.
@@ -105,6 +108,9 @@ export async function fetchCapsuleList(capsuleId: number) {
 }
 
 export async function fetchGuestBook(token: string, aid: bigint, page = 1) {
+  if (token.length <= 0) {
+    throw new InvalidParameterError("Token is required!", "token")
+  }
   return fetchMS2Formatted({
     fetchOptions: {
       postfix: guestbookPostfix,
@@ -141,7 +147,7 @@ export async function fetchGuestBook(token: string, aid: bigint, page = 1) {
         month: Number.parseInt(timeStr[1] ?? "1"),
         day: Number.parseInt(timeStr[2] ?? "1"),
       }
-      const commentDate = new Date(commentDateRaw.year, commentDateRaw.month - 1, commentDateRaw.day)
+      const commentDate = new TZDate(commentDateRaw.year, commentDateRaw.month - 1, commentDateRaw.day, Timezone)
       // 댓글 ID
       const commentId = Number($el.find(".report > a > img").attr("data-seq") ?? "-1")
       // 집주인 댓글일 시에는 마지막 커맨트에 추가
@@ -149,7 +155,7 @@ export async function fetchGuestBook(token: string, aid: bigint, page = 1) {
         if (comments.length >= 1) {
           const prevComment = comments[comments.length - 1]
           prevComment.replyComment = comment
-          prevComment.replyCommentDate = commentDate
+          prevComment.replyCommentDate = commentDate.getTime()
           continue
         }
       }
@@ -171,7 +177,7 @@ export async function fetchGuestBook(token: string, aid: bigint, page = 1) {
         replyCommentDate: null,
         job,
         level,
-        commentDate,
+        commentDate: commentDate.getTime(),
         isOwner: isOwner ? 1 : 0,
       })
     }

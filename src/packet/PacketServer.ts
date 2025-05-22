@@ -2,7 +2,7 @@ import Bun from "bun"
 import Debug from "debug"
 import { isMessageEvent, PacketHandlerMap, type FlowEvent } from "./PacketHandler.ts"
 import { loadTrophyRanks } from "./database/TrophyRankLoader.ts"
-import { CharacterInfoDB } from "./database/CharacterInfoDB.ts"
+import { CharacterInfoDB } from "../ms2/storage/CharacterInfoDB.ts"
 
 export interface PacketData {
   messageId: string

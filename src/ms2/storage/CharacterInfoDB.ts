@@ -71,6 +71,16 @@ export class CharacterInfoDB {
     return exec.map((cidInfo) => cidInfo.characterId)
   }
 
+  public getAids() {
+    const exec = this.database.prepare(
+      `SELECT accountId, MIN(trophyRank) AS min_trophyRank
+      FROM characterStore
+      GROUP BY accountId
+      ORDER BY min_trophyRank ASC;`
+    ).all() as Array<{accountId: bigint, min_trophyRank: bigint}>
+    return exec.map((cidInfo) => cidInfo.accountId)
+  }
+
   public getMaxRank() {
     const exec = this.database.prepare(
       `SELECT MAX(trophyRank) AS maxTrophyRank FROM characterStore;`

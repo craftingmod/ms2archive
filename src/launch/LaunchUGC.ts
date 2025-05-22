@@ -1,5 +1,5 @@
 import { profileURLPrefix } from "../ms2/util/MS2FetchUtil.ts"
-import { CharacterInfoDB } from "../packet/database/CharacterInfoDB.ts"
+import { CharacterInfoDB } from "../ms2/storage/CharacterInfoDB.ts"
 import { decodeCharacterInfoPacket, extractUgcItemLook } from "../packet/defintion/charinfo/DefCharInfo.ts"
 import { CustomReader } from "../packet/defintion/CustomReader.ts"
 import Debug from "debug"

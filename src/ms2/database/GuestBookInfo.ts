@@ -13,14 +13,24 @@ export function defineGuestBookInfo(seq: SequelizeLite) {
     nickname: DataTypesLite.STRING,
     comment: DataTypesLite.STRING,
     replyComment: DataTypesLite.STRING_NULLABLE,
-    replyCommentDate: DataTypesLite.DATE_NULLABLE,
-    characterId: DataTypesLite.BIGINT,
+    replyCommentDate: DataTypesLite.INTEGER_NULLABLE,
     job: DataTypesLite.INTEGER,
     level: DataTypesLite.INTEGER,
     isOwner: DataTypesLite.INTEGER,
-    commentDate: DataTypesLite.DATE,
+    commentDate: DataTypesLite.INTEGER,
   }, {
     commentId: [AdditionalDef.PRIMARY_KEY],
+  })
+}
+
+export type GuestBookExistInfo = DefinedModelToJSObject<ReturnType<typeof defineGuestBookExistInfo>>
+
+export function defineGuestBookExistInfo(seq: SequelizeLite) {
+  return seq.define("guestBookExist", {
+    ownerAccountId: DataTypesLite.BIGINT,
+    commentCount: DataTypesLite.INTEGER,
+  }, {
+    ownerAccountId: [AdditionalDef.PRIMARY_KEY],
   })
 }
 

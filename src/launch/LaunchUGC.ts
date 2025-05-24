@@ -8,6 +8,7 @@ import { SmallWorkerHelper } from "../worker/WorkerHelper.ts"
 import type { M2UMessage } from "../worker/M2UWorker.ts"
 import { sleep } from "bun"
 import { fetchBlob } from "../ms2/fetch/GenericFetch.ts"
+import { } from "@supercharge/promise-pool"
 
 const Verbose = Debug("ms2archive:verbose:ugc")
 
@@ -18,12 +19,7 @@ const workerFactory = new SmallWorkerHelper<M2UMessage>(
 
 export async function runUGC() {
   const charInfo = new CharacterInfoDB("./data/ms2char.db", true)
-  const packets = charInfo.getPackets()
-
-  const ugcURL = [] as string[]
-
-  let errors = 0
-  for (const packet of packets) {
+  const ugcURL = charInfo.getPackets().flatMap((packet) => {
     const reader = new CustomReader(packet.rawPacket)
     reader.readShort() // opcode
 
@@ -32,7 +28,7 @@ export async function runUGC() {
 
       const ugcInfo = extractUgcItemLook(info)
       if (ugcInfo.length > 0) {
-        ugcURL.push(...(ugcInfo.map((v) => v.ugcUrl)))
+        return ugcInfo.map((v) => v.ugcUrl)
       }
     } catch {
       // console.error(err)
@@ -40,12 +36,14 @@ export async function runUGC() {
       Verbose(`Parse error: ${packet.characterId}`)
       const decoder = new TextDecoder("utf-16")
       const atomicStr = decoder.decode(packet.rawPacket)
-      const atomicM2U = atomicStr.match(/[A-Za-z0-9/-]+\.m2u/g)
+      const atomicM2U = atomicStr.match(/item[A-Za-z0-9/-]+\.m2u/g)
       if ((atomicM2U?.length ?? 0) > 0) {
-        ugcURL.push(...atomicM2U!)
+        return atomicM2U!
       }
     }
-  }
+  })
+
+  let errors = 0
 
   Verbose(`Length: ${ugcURL.length}, error: ${errors}`)
 
@@ -68,11 +66,17 @@ export async function runUGC() {
       continue
     }
 
-    Verbose(`Processing ${fileName}.. (${processIndex++}/${ugcURL.length})`)
+    Verbose(`Processing ${fileName} (${processIndex++}/${ugcURL.length})`)
 
-    const itemBlob = await fetchBlob(
-      `${profileURLPrefix}${url}`
-    )
+    let itemBlob: { blob: Blob } | null = null
+
+    try {
+      itemBlob = await fetchBlob(
+        `${profileURLPrefix}${url}`
+      )
+    } catch {
+      continue
+    }
 
     if (itemBlob == null) {
       Verbose(`${url} Image not found!`)
@@ -89,9 +93,15 @@ export async function runUGC() {
 
     const iconURL = url.replace("item/", "itemicon/").replace(".m2u", ".png")
 
-    const iconBlob = await fetchBlob(
-      `${profileURLPrefix}${iconURL}`
-    )
+    let iconBlob: { blob: Blob } | null = null
+
+    try {
+      iconBlob = await fetchBlob(
+        `${profileURLPrefix}${iconURL}`
+      )
+    } catch {
+      continue
+    }
 
     if (iconBlob == null) {
       Verbose(`${url} Image not found!`)
@@ -105,7 +115,7 @@ export async function runUGC() {
       ugcFileType: "png",
       ugcBytes: iconBuffer,
     }])
-    
+
   }
 
   await sleep(10000)

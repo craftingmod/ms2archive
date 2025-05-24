@@ -10,6 +10,7 @@
     "@types/mime-types": "^2.1.4",
     "@types/pako": "^2.0.3",
     "@types/turndown": "^5.0.5",
+    "@typescript/native-preview": "^7.0.0-dev.20250523.1",
     "bun": "^1.2.12",
     "drizzle-kit": "^0.30.6",
     "eslint": "^9.26.0",
@@ -20,6 +21,8 @@
   },
   "dependencies": {
     "@date-fns/tz": "^1.2.0",
+    "@supercharge/promise-pool": "^3.2.0",
+    "ansis": "^4.0.0",
     "bmp-ts": "^1.0.9",
     "chalk": "^5.4.1",
     "cheerio": "^1.0.0",

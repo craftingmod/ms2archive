@@ -11,20 +11,24 @@ export enum DataTypesLite {
   STRING_ARRAY,
   DATE_NULLABLE,
   DATE,
+  BLOB_NULLABLE,
+  BLOB,
 }
 
 
 // Gemini가 만들어 준 룩업 테이블
 const DATA_TYPE_SCHEMA_PROPERTIES: Record<DataTypesLite, { baseSqlType: string; isNonNullVariant: boolean }> = {
   [DataTypesLite.INTEGER_NULLABLE]: { baseSqlType: "INTEGER", isNonNullVariant: false },
-  [DataTypesLite.INTEGER]:          { baseSqlType: "INTEGER", isNonNullVariant: true },
-  [DataTypesLite.BIGINT_NULLABLE]:  { baseSqlType: "BIGINT",  isNonNullVariant: false },
-  [DataTypesLite.BIGINT]:           { baseSqlType: "BIGINT",  isNonNullVariant: true },
-  [DataTypesLite.STRING_NULLABLE]:  { baseSqlType: "TEXT",    isNonNullVariant: false },
-  [DataTypesLite.STRING]:           { baseSqlType: "TEXT",    isNonNullVariant: true },
-  [DataTypesLite.STRING_ARRAY]:     { baseSqlType: "TEXT",    isNonNullVariant: true }, // 스키마 상 non-nullable 문자열처럼 취급
-  [DataTypesLite.DATE_NULLABLE]:    { baseSqlType: "BIGINT",  isNonNullVariant: false }, // UTC Timestamp
-  [DataTypesLite.DATE]:             { baseSqlType: "BIGINT",  isNonNullVariant: true },  // UTC Timestamp
+  [DataTypesLite.INTEGER]: { baseSqlType: "INTEGER", isNonNullVariant: true },
+  [DataTypesLite.BIGINT_NULLABLE]: { baseSqlType: "BIGINT", isNonNullVariant: false },
+  [DataTypesLite.BIGINT]: { baseSqlType: "BIGINT", isNonNullVariant: true },
+  [DataTypesLite.STRING_NULLABLE]: { baseSqlType: "TEXT", isNonNullVariant: false },
+  [DataTypesLite.STRING]: { baseSqlType: "TEXT", isNonNullVariant: true },
+  [DataTypesLite.STRING_ARRAY]: { baseSqlType: "TEXT", isNonNullVariant: true }, // 스키마 상 non-nullable 문자열처럼 취급
+  [DataTypesLite.DATE_NULLABLE]: { baseSqlType: "BIGINT", isNonNullVariant: false }, // UTC Timestamp
+  [DataTypesLite.DATE]: { baseSqlType: "BIGINT", isNonNullVariant: true },  // UTC Timestamp
+  [DataTypesLite.BLOB]: { baseSqlType: "BLOB", isNonNullVariant: true },
+  [DataTypesLite.BLOB_NULLABLE]: { baseSqlType: "BLOB", isNonNullVariant: false }
 }
 
 
@@ -271,6 +275,10 @@ export class ModelLite<T extends ModelDefinition> {
         case DataTypesLite.DATE_NULLABLE:
           result[key] = new Date(Number(value)) as any
           break
+        case DataTypesLite.BLOB:
+        case DataTypesLite.BLOB_NULLABLE:
+          result[key] = value as any
+          break
         default:
           throw new Error(`DataTypes ${this.modelDef[key]} not implemented!`)
       }
@@ -307,6 +315,10 @@ export class ModelLite<T extends ModelDefinition> {
         case DataTypesLite.DATE:
         case DataTypesLite.DATE_NULLABLE:
           result[key] = Number(value) as any
+          break
+        case DataTypesLite.BLOB:
+        case DataTypesLite.BLOB_NULLABLE:
+          result[key] = value as any
           break
         default:
           throw new Error(`DataTypes ${modelDef[key]} not implemented!`)
@@ -364,7 +376,9 @@ type DataTypeToJSType<T> =
   T extends DataTypesLite.STRING ? string :
   T extends DataTypesLite.STRING_ARRAY ? string[] :
   T extends DataTypesLite.DATE_NULLABLE ? Date | null :
-  T extends DataTypesLite.DATE ? Date : never
+  T extends DataTypesLite.DATE ? Date :
+  T extends DataTypesLite.BLOB_NULLABLE ? Uint8Array | null :
+  T extends DataTypesLite.BLOB ? Uint8Array : never
 
 type DataTypeToDBType<T> =
   T extends undefined ? never :
@@ -375,7 +389,9 @@ type DataTypeToDBType<T> =
   T extends DataTypesLite.STRING_NULLABLE ? string | null :
   T extends DataTypesLite.STRING ? string :
   T extends DataTypesLite.DATE_NULLABLE ? bigint | null :
-  T extends DataTypesLite.DATE ? bigint : never
+  T extends DataTypesLite.DATE ? bigint :
+  T extends DataTypesLite.BLOB_NULLABLE ? Uint8Array | null :
+  T extends DataTypesLite.BLOB ? Uint8Array : never
 
 type JSTypeToDBType<T> =
   T extends undefined ? never :
@@ -384,6 +400,8 @@ type JSTypeToDBType<T> =
   T extends number ? bigint :
   T extends Date | null ? bigint | null :
   T extends Date ? bigint :
-  T
+  T extends Uint8Array | null ? Uint8Array | null :
+  T extends Uint8Array ? Uint8Array : never
+
 
 type StrongPartial<T> = Pick<T, keyof T>

@@ -15,13 +15,16 @@ const existAids = new Set(
   guestbookDB.guestbookExistStore.findAll().map((v) => v.ownerAccountId)
 )
 
+// 핑찌
+// const queryAids = [101453n]
+
 let aidDone = 0
 for (const accountId of queryAids) {
   if (existAids.has(accountId)) {
     ++aidDone
     continue
   }
-  
+
   Verbose(`[GuestBook] AID ${accountId} (${++aidDone}/${queryAids.length})`)
 
   let commentCount = -1

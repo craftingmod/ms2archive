@@ -1,5 +1,6 @@
 import { ProfileStorage } from "ms2/storage/ProfileStorage.ts"
 import Debug from "debug"
+import fs from "node:fs/promises"
 
 const Verbose = Debug("ms2archive:verbose:profileMerge")
 
@@ -13,6 +14,7 @@ const insertQuery = profileStorage.database.prepare(
   `UPDATE ${tableName} SET avifData = ? WHERE profileId = ?;`
 )
 
+/*
 let deleteCount = 0
 for (const avifInfo of avifPaths) {
   if ((deleteCount++) % 1000 === 1) {
@@ -25,6 +27,17 @@ for (const avifInfo of avifPaths) {
 
   } catch (err) {
     console.error(err)
+  }
+}
+  */
+
+const profileFiles = await fs.readdir("./data/Profile", {
+  recursive: true,
+})
+
+for (const filePath of profileFiles) {
+  if (filePath.endsWith(".avif")) {
+    await fs.rm(`./data/Profile/${filePath}`)
   }
 }
 

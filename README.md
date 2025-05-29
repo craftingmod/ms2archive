@@ -1,15 +1,14 @@
 # ms2archive
 
-To install dependencies:
+메이플스토리 2의 데이터들을 **가능한 모두** 아카이빙 하고 싶어서 만든 프로젝트.
 
-```bash
-bun install
-```
+이미 서비스 종료가 되었기 때문에 아쉽게도 코드가 있어도 돌아가지 않아요.
 
-To run:
+메이플2 같이 하신 분들 진짜 수고하셨습니다. 행복하세요.
 
-```bash
-bun run src/index.ts
-```
-
-This project was created using `bun init` in bun v1.2.3. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+* `ms2archive.db`: 게시글 저장 DB
+* `ms2char.db`: 메이플2 캐릭터 정보(Raw)가 담긴 DB
+* `ms2guestbook.db`: 메이플2 방명록이 담긴 DB
+* `ms2profile.db`: 메이플2 프로필 이미지(AVIF)가 담긴 DB
+* `ms2query.db`: 메이플2 던전 클리어 정보 및 그로 추측한 캐릭터 정보가 담긴 DB
+* `ms2rank.db`: 메이플2 트로피 순위가 담긴 DB (이 ms2rank.db가 기준.)

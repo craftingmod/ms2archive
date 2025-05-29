@@ -9,5 +9,5 @@ const db = new MS2Database("./data/ms2query.db")
 
 for (let i = 1; i < queryDungeons.length; i += 1) {
   const ms2Analyzer = new MS2Analyzer(db, queryDungeons[i])
-  await ms2Analyzer.analyze(true)
+  await ms2Analyzer.analyze(false)
 }

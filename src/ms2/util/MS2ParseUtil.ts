@@ -1,6 +1,8 @@
 import { TZDate } from "@date-fns/tz"
 import { Timezone } from "../Config.ts"
 
+export type UnpackArray<T> = T extends (infer U)[] ? U : T
+
 function getFirstOrNull<T>(arr: T[] | T | null | undefined) {
   if (arr == null) {
     return null
@@ -56,7 +58,7 @@ export function extractQuoteNum(str: string | null | undefined) {
 export function parseTime(timeStr: string) {
   const year = extractNumber(timeStr.match(/\d+년/))
   const month = extractNumber(timeStr.match(/\d+월/))
-  const day = extractNumber(timeStr.match(/\d+일/)) 
+  const day = extractNumber(timeStr.match(/\d+일/))
 
   const isAM = timeStr.indexOf("오전") >= 0
   const isPM = timeStr.indexOf("오후") >= 0
@@ -69,7 +71,7 @@ export function parseTime(timeStr: string) {
 
   // null 처리
   if (
-    year == null || 
+    year == null ||
     month == null ||
     day == null ||
     rawHour12 == null ||
@@ -102,7 +104,7 @@ export function parseDashTime(timeStr: string) {
   const [year, month, day] = ymdStr.split("-").map((v) => Number(v))
 
   const postStr = timeStr.substring(pivot + 1)
-  
+
   const isAM = postStr.indexOf("오전") >= 0
   const isPM = postStr.indexOf("오후") >= 0
   if (isAM === isPM) {

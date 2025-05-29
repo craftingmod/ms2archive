@@ -35,6 +35,7 @@ export const bossClearedWithMemberPostfix = `Rank/Boss1Party`
 export const starArchitectPostfix = `Rank/Architect`
 export const guildTrophyPostfix = `Rank/Guild`
 export const worldChatPostfix = `Now/GetMessage`
+export const gatchaListPostfix = `Probability/Store`
 export const gatchaPostfix = `Probability/StoreView`
 export const guestbookPostfix = `Guestbook`
 export const darkStreamPostfix = `Rank/DarkStream`
@@ -42,6 +43,7 @@ export const pvpPostfix = `Rank/PVP`
 export const guildPvPPostfix = `Rank/GuildPVP`
 export const QnAPostfix = `Kch/Qna`
 export const QnaAnswerPostfix = `Kch/QnaAnswer`
+export const findItemData = `Probability/findItemData`
 // ======================
 
 export const profileURLPrefix = `https://ua-maplestory2.nexon.com/`
@@ -87,7 +89,7 @@ export async function searchLatestPage(
     if (pageHasActualContent(startPageResult)) {
       anchor = currentProbePage
       lowerBoundAnchor = currentProbePage
-      if (isLikelyFullListPage(startPageResult,fullPageItemCount) === false) {
+      if (isLikelyFullListPage(startPageResult, fullPageItemCount) === false) {
         return currentProbePage // 시작 페이지가 끝 페이지
       }
       // 최소 검색 설정
@@ -212,22 +214,22 @@ export async function searchLatestPageOld(queryFn: (page: number) => Promise<unk
   let determined = false
   // 1. Check the point of no query (결과가 없는 지점을 빠르게 탐색하여 대략적인 상한선 설정)
   while (true) {
-      const queryInfo = await queryFn(minPage)
-      if (queryInfo == null) {
-        maxPage = minPage
-        minPage /= 2
-        break
-      }
-      if (queryInfo.length === 10) { // 페이지가 꽉 찼으면 (10개 항목 가정)
-        minPage *= 2 // 탐색 범위를 두 배로 늘림
-      } else if (queryInfo.length === 0) { // 페이지에 결과가 없으면
-        maxPage = minPage // 현재 minPage를 상한선으로 설정
-        minPage /= 2     // 이전 minPage (결과가 있었을 수 있는)로 돌아감
-        break
-      } else { // 페이지가 꽉 차지 않았지만 결과가 있으면 (0 < length < 10)
-        determined = true // 마지막 페이지를 찾았다고 간주
-        break
-      }
+    const queryInfo = await queryFn(minPage)
+    if (queryInfo == null) {
+      maxPage = minPage
+      minPage /= 2
+      break
+    }
+    if (queryInfo.length === 10) { // 페이지가 꽉 찼으면 (10개 항목 가정)
+      minPage *= 2 // 탐색 범위를 두 배로 늘림
+    } else if (queryInfo.length === 0) { // 페이지에 결과가 없으면
+      maxPage = minPage // 현재 minPage를 상한선으로 설정
+      minPage /= 2     // 이전 minPage (결과가 있었을 수 있는)로 돌아감
+      break
+    } else { // 페이지가 꽉 차지 않았지만 결과가 있으면 (0 < length < 10)
+      determined = true // 마지막 페이지를 찾았다고 간주
+      break
+    }
   }
   if (!determined) {
     // 2. min-max binary search (이진 탐색으로 정확한 마지막 페이지 찾기)
@@ -446,7 +448,7 @@ export function shrinkProfileURL(url: string) {
 export function getProfileId(profileURL: string) {
   if (profileURL.startsWith(profileURLPrefixLong)) {
     const profileIdStr = profileURL.substring(profileURL.lastIndexOf("/") + 1, profileURL.lastIndexOf("."))
-    
+
     return BigInt(profileIdStr)
   } else {
     console.log(profileURL)
@@ -497,7 +499,7 @@ export function parseCommaNumber(commaNumber: string) {
     return 0
   }
   commaNumber = commaNumber.trim()
-  
+
   return Number.parseInt(commaNumber.replaceAll(",", ""))
 }
 

@@ -13,6 +13,7 @@ export function defineProfileInfo(seq: SequelizeLite) {
     originalURL: DataTypesLite.STRING,
     pngPath: DataTypesLite.STRING,
     avifPath: DataTypesLite.STRING,
+    avifData: DataTypesLite.BLOB_NULLABLE,
   }, {
     profileId: [AdditionalDef.PRIMARY_KEY],
   })

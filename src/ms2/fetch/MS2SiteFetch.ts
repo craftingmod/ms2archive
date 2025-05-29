@@ -1,7 +1,6 @@
 import type { RawGuestBookInfo } from "../database/GuestBookInfo.ts"
 import { WorldChatType } from "../database/WorldChatInfo.ts"
-import { MS2ItemTier, MS2Tradable, type MS2CapsuleItem } from "../struct/MS2Gatcha.ts"
-import { gatchaPostfix, getTierFromText, getTradableFromText, guestbookPostfix, ms2BrowserHeader, postfixToURL, worldChatPostfix } from "../util/MS2FetchUtil.ts"
+import { guestbookPostfix, ms2BrowserHeader, postfixToURL, worldChatPostfix } from "../util/MS2FetchUtil.ts"
 import { fetchMS2, fetchMS2Formatted } from "./MS2BaseFetch.ts"
 import { parseJobFromIcon } from "../struct/MS2Job.ts"
 import { InvalidParameterError } from "./FetchError.ts"
@@ -42,68 +41,6 @@ export async function fetchWorldChat() {
       nickname: v.ch_name,
       type: chatType,
     }
-  })
-}
-
-export async function fetchCapsuleList(capsuleId: number) {
-  return fetchMS2Formatted({
-    fetchOptions: {
-      postfix: `${gatchaPostfix}/${capsuleId}`,
-    },
-  }, ($) => {
-    // Row 
-    const trs = $(".p_item2 > tbody").find("tr").get()
-    const result: { [key in string]: MS2CapsuleItem[] } = {}
-    let categoryName = "없음"
-    for (const row of trs) {
-      const $row = $(row)
-      const tds = $row.find("td").get()
-      // 아이템
-      const item: MS2CapsuleItem = {
-        itemName: "",
-        itemTier: MS2ItemTier.NORMAL,
-        itemTrade: MS2Tradable.ACCOUNT_BOUND,
-        quantity: 0,
-        chancePercent: 0,
-      }
-      let offset = 0
-      for (let i = 0; i < tds.length; i += 1) {
-        const $column = $(tds[i])
-        if (i === 0 && Number($column.attr("rowspan") ?? "0") > 0) {
-          // 분류
-          categoryName = $column.text().trim()
-          offset += 1
-          continue
-        }
-        // 데이터 넣기
-        const text = $column.text().trim()
-        switch (i - offset) {
-          case 0:
-            item.itemName = text
-            break
-          case 1:
-            item.itemTier = getTierFromText(text)
-            break
-          case 2:
-            item.itemTrade = getTradableFromText(text)
-            break
-          case 3:
-            item.quantity = Number.parseInt(text.substring(0, text.length - 2))
-            break
-          case 4:
-            item.chancePercent = Number.parseFloat(text.substring(0, text.length - 1))
-            break
-          default:
-            throw new Error("Unknown column")
-        }
-      }
-      // Result에 넣기
-      if (result[categoryName] === undefined) {
-        result[categoryName] = []
-      }
-      result[categoryName]?.push(item)
-    }
-    return result
   })
 }
 

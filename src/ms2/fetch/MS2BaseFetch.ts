@@ -1,4 +1,4 @@
-import got, { HTTPError, TimeoutError } from "got"
+import got, { HTTPError, TimeoutError, type Method } from "got"
 import chalk from "chalk"
 import { FetchError, InternalServerError, MaybeNotFoundError, MS2TimeoutError, NotFoundError, type FetchErrorInfo } from "./FetchError.ts"
 import { Agent as HttpAgent } from "node:http"
@@ -23,6 +23,8 @@ export type AllowedFormatTypes = object | string | bigint | number | boolean
 
 export interface FetchMS2Options {
   postfix: string,
+  method?: Method,
+  body?: FormData | string | Uint8Array,
   urlSearchParams?: Record<string, string>,
   userAgent?: string,
   headers?: Record<string, string>,
@@ -48,6 +50,8 @@ export async function fetchMS2(options: FetchMS2Options | string) {
 
   const optionsWithDefault: Required<FetchMS2Options> = {
     urlSearchParams: {},
+    method: "GET",
+    body: new FormData(),
     userAgent: ms2UserAgent,
     headers: {},
     noRetry302: false,
@@ -75,11 +79,17 @@ export async function fetchMS2(options: FetchMS2Options | string) {
   verbose(`[MS2Fetch] fetching ${chalk.green(fetchRawURL.toString())
     }`)
 
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const bodyOption = (optionsWithDefault.method.toLowerCase() === "post") ? { body: optionsWithDefault.body as any } : {}
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
   try {
     for (let i = 0; i < maxRetry; i += 1) {
       // Request
       const response = await got(url, {
+        method: optionsWithDefault.method,
         searchParams,
+        ...bodyOption,
         headers: {
           "User-Agent": optionsWithDefault.userAgent,
           "Referer": `https://${ms2Domain}`,
@@ -223,6 +233,14 @@ export async function fetchMS2(options: FetchMS2Options | string) {
   `)
 }
 
+export async function fetchMS2JSON<T>(options: FetchMS2Options | string) {
+  const result = await fetchMS2(options)
+  return {
+    ...result,
+    body: JSON.parse(result.body) as T,
+  }
+}
+
 /**
  * 레거시용
  */
@@ -301,8 +319,8 @@ export async function fetchMS2FormattedList<T extends AllowedFormatTypes>(option
   return (await fetchMS2Formatted<T[]>({
     ...options,
   }, async ($) => {
-    const $root:Cheerio<Element> = $<Element, string>(options.listSelector)
-    const formattedResults:T[] = []
+    const $root: Cheerio<Element> = $<Element, string>(options.listSelector)
+    const formattedResults: T[] = []
     for (let i = 0; i < $root.length; i += 1) {
       const element = $root[i]
       const result = await formatter($(element), $, i)

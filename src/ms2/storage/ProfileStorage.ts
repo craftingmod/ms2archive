@@ -10,8 +10,16 @@ export class ProfileStorage extends SequelizeLite {
   public getArchivedCharacterIds() {
     const query = this.database.prepare(
       `SELECT characterId FROM ${this.profileInfoStore.tableName};`
-    ).all() as Array<{characterId: bigint}>
+    ).all() as Array<{ characterId: bigint }>
 
     return query.map(row => row.characterId)
+  }
+
+  public getAVIFPaths() {
+    const query = this.database.prepare(
+      `SELECT profileId, avifPath FROM ${this.profileInfoStore.tableName} WHERE profileId > 0;`
+    ).all() as Array<{ profileId: bigint, avifPath: string, avifData: Uint8Array | undefined }>
+
+    return query
   }
 }

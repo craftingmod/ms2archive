@@ -34,6 +34,8 @@ fseFetch.fetchFSE(
   "maview",
 )
 */
+
+/*
 const maviewRoutes = [
   "News/Notice",
   "News/ListSub",
@@ -70,3 +72,28 @@ for (const slashroute of maviewRoutes) {
     "maview",
   )
 }
+  */
+
+const maviewRoutes = [
+  "Probability/Socket",
+  "Probability/Dungeon",
+  "Probability/Enchant",
+  "Probability/PetCapture",
+  "Probability/Key",
+  "Probability/Life",
+  "Probability/Etc",
+]
+
+for (const slashroute of maviewRoutes) {
+  let route = slashroute
+  if (route.indexOf("?") >= 0) {
+    route = route.substring(0, route.indexOf("?"))
+  }
+  route = route.replaceAll("/", "")
+  await fseFetch.fetchFSE(
+    `https://maplestory2.nexon.com/${slashroute}`,
+    route,
+    "maview",
+  )
+}
+

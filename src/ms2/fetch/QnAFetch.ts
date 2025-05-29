@@ -1,11 +1,10 @@
 import type { Cheerio } from "cheerio"
 import { parseJobFromIcon } from "../struct/MS2Job.ts"
 import { QnaAnswerPostfix, QnAPostfix } from "../util/MS2FetchUtil.ts"
-import { extractNumber, parseDashTime, parseLevelWithName } from "../util/MS2ParseUtil.ts"
+import { extractNumber, parseDashTime, parseLevelWithName, type UnpackArray } from "../util/MS2ParseUtil.ts"
 import { fetchMS2FormattedList } from "./MS2BaseFetch.ts"
 import type { Element } from "domhandler"
 
-export type UnpackArray<T> = T extends (infer U)[] ? U : T
 export type QnAArticle = UnpackArray<Awaited<ReturnType<typeof fetchPlayQnA>>>
 
 export async function fetchPlayQnA(page = 1) {
